@@ -23,9 +23,7 @@ func GetRepoStargazers(repo string, token string, page int) ([]map[string]interf
 		return nil, err
 	}
 
-	if token != "" {
-		req.Header.Add("Authorization", "token "+token)
-	}
+	req.Header.Set("Authorization", "token "+token)
 	req.Header.Add("Accept", "application/vnd.github.v3.star+json")
 	res, err := client.Do(req)
 	if err != nil {
@@ -59,9 +57,7 @@ func GetRepoStargazersCount(repo string, token string) (int, error) {
 		return 0, err
 	}
 
-	if token != "" {
-		req.Header.Add("Authorization", "token "+token)
-	}
+	req.Header.Set("Authorization", "token "+token)
 	req.Header.Add("Accept", "application/vnd.github.v3.star+json")
 	res, err := client.Do(req)
 	if err != nil {

@@ -6,11 +6,12 @@ import (
 )
 
 func handlerAPI(config Config) {
-	repo := "gorm/"
+	repo := "beego/beego"
+	// repo := "go-gorm/gorm"
 	accessToken := config.GithubToken
 
-	res, err := GetRepoStargazersCount(repo, accessToken)
-	// res, err := api.GetRepoStargazers(repo, accessToken, 1)
+	res, err := GetRepoStargazers(repo, accessToken, 1)
+	// res, err := GetRepoStargazersCount(repo, accessToken)
 	if err != nil {
 		fmt.Println(err)
 		return
