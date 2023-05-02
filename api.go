@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -12,30 +11,12 @@ const defaultPerPage = 30
 
 func GetRepoStargazers(repo string, token string, page int) ([]map[string]interface{}, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d", repo, defaultPerPage)
-
 	if page != 0 {
 		url = fmt.Sprintf("%s&page=%d", url, page)
 	}
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", "token "+token)
-	req.Header.Add("Accept", "application/vnd.github.v3.star+json")
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to get stargazers: %s", res.Status)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
+	client := NewHttpClient(url, "GET", token)
+	body, err := client.Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -51,25 +32,8 @@ func GetRepoStargazers(repo string, token string, page int) ([]map[string]interf
 func GetRepoStargazersCount(repo string, token string) (int, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s", repo)
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return 0, err
-	}
-
-	req.Header.Set("Authorization", "token "+token)
-	req.Header.Add("Accept", "application/vnd.github.v3.star+json")
-	res, err := client.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		return 0, fmt.Errorf("failed to get stargazers count: %s", res.Status)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
+	client := NewHttpClient(url, "GET", token)
+	body, err := client.Execute()
 	if err != nil {
 		return 0, err
 	}
