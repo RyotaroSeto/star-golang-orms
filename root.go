@@ -13,10 +13,12 @@ func Execute() {
 	repo := "beego/beego"
 	accessToken := config.GithubToken
 
-	res, err := GetRepoStargazers(repo, accessToken, 1)
-	// res, err := GetRepoStargazersCount(repo, accessToken)
-	log.Println(res)
+	// res, err := getRepoStargazers(repo, accessToken, 1)
+	// res, err := getRepoStargazersCount(repo, accessToken)
+	res, err := getStarsForMonthAgo(repo, accessToken)
+	// res, err := getRepoLogoUrl(repo, accessToken)
 	if err != nil {
 		return
 	}
+	log.Println(res)
 }
