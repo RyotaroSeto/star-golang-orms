@@ -51,6 +51,83 @@ func GetRepoStargazersCount(repo string, token string) (int, error) {
 	return int(stargazersCount), nil
 }
 
+type GithubUser struct {
+	AvatarURL string `json:"avatar_url"`
+}
+
+func getRepoLogoUrl(repo string, token string) (string, error) {
+	owner := strings.Split(repo, "/")[0]
+	url := fmt.Sprintf("https://api.github.com/users/%s", owner)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Accept", "application/vnd.github.v3.star+json")
+	if token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", token))
+	}
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer res.Body.Close()
+	var user GithubUser
+	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
+		return "", err
+	}
+
+	return user.AvatarURL, nil
+}
+
+// client := &http.Client{}
+
+// req, err := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s", repo), nil)
+// if err != nil {
+// 	fmt.Println(err)
+// 	return
+// }
+
+// req.Header.Set("Accept", "application/vnd.github.v3.star+json")
+// req.Header.Set("Authorization", fmt.Sprintf("token %s", accessToken))
+
+// resp, err := client.Do(req)
+// if err != nil {
+// 	fmt.Println(err)
+// 	return
+// }
+// defer resp.Body.Close()
+
+// log.Println("22222222222222")
+// log.Println(resp.Body)
+// log.Println("22222222222222")
+// var body []byte
+// _, err = resp.Body.Read(body)
+// if err != nil {
+// 	fmt.Println(err)
+// 	return
+// }
+
+// log.Println("11111111111111111")
+// log.Println(body)
+// log.Println("11111111111111111")
+// var data map[string]interface{}
+// err = json.Unmarshal(body, &data)
+// if err != nil {
+// 	fmt.Println(err)
+// 	return
+// }
+
+// log.Println("3333333333333")
+// log.Println(data)
+// log.Println("3333333333333")
+// starCount := data["all"].([]interface{})[len(data["all"].([]interface{}))-2].(float64)
+
+// fmt.Printf("1 month ago star count: %v\n", starCount)
+
 // func GetRepoStarRecords(repo string, token string, maxRequestAmount int) ([]map[string]interface{}, error) {
 // 	patchRes, err := GetRepoStargazers(repo, token, 1)
 // 	if err != nil {
@@ -132,34 +209,51 @@ func GetRepoStargazersCount(repo string, token string) (int, error) {
 // 	return starRecords, nil
 // }
 
-type GithubUser struct {
-	AvatarURL string `json:"avatar_url"`
-}
+// func main() {
+// 	owner := "owner_name"
+// 	repo := "repo_name"
+// 	accessToken := "your_access_token"
 
-func getRepoLogoUrl(repo string, token string) (string, error) {
-	owner := strings.Split(repo, "/")[0]
-	url := fmt.Sprintf("https://api.github.com/users/%s", owner)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
+// 	// create http client
+// 	client := &http.Client{}
 
-	req.Header.Set("Accept", "application/vnd.github.v3.star+json")
-	if token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("token %s", token))
-	}
+// 	// create request
+// 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/stats/participation", owner, repo), nil)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+// 	repoURL := `https://api.github.com/repos/beego/stargazers?per_page=1`
 
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
+// 	req, err := http.NewRequest("GET", repoURL, nil)
+// 	if err != nil {
+// 		fmt.Println("Error creating HTTP request:", err)
+// 		return
+// 	}
+// 	req.Header.Set("Authorization", fmt.Sprintf("token %s", accessToken))
 
-	defer res.Body.Close()
-	var user GithubUser
-	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
-		return "", err
-	}
+// 	client := http.Client{}
+// 	res, err := client.Do(req)
+// 	if err != nil {
+// 		fmt.Println("Error sending HTTP request:", err)
+// 		return
+// 	}
 
-	return user.AvatarURL, nil
-}
+// 	body, err := io.ReadAll(res.Body)
+// 	defer res.Body.Close()
+// 	if err != nil {
+// 		fmt.Println("Error reading response body:", err)
+// 		return
+// 	}
+
+// 	var result map[string]interface{}
+// 	err = json.Unmarshal(body, &result)
+// 	if err != nil {
+// 		fmt.Println("Error parsing response body:", err)
+// 		return
+// 	}
+
+// 	log.Println(result)
+// 	// starCount := result["all"].([]interface{})[len(result["all"].([]interface{}))-2].(float64)
+// 	// fmt.Printf("1 month ago star count: %v\n", starCount)
+// }
