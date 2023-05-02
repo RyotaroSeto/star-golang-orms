@@ -34,7 +34,7 @@ func GetRepoStargazers(repo string, token string, page int) ([]map[string]interf
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("Failed to get stargazers: %s", res.Status)
+		return nil, fmt.Errorf("failed to get stargazers: %s", res.Status)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -70,7 +70,7 @@ func GetRepoStargazersCount(repo string, token string) (int, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return 0, fmt.Errorf("Failed to get stargazers count: %s", res.Status)
+		return 0, fmt.Errorf("failed to get stargazers count: %s", res.Status)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -85,7 +85,7 @@ func GetRepoStargazersCount(repo string, token string) (int, error) {
 
 	stargazersCount, ok := result["stargazers_count"].(float64)
 	if !ok {
-		return 0, fmt.Errorf("Failed to parse stargazers count")
+		return 0, fmt.Errorf("failed to parse stargazers count")
 	}
 
 	return int(stargazersCount), nil
