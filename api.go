@@ -23,12 +23,12 @@ func getRepoStargazers(repo string, token string, page int) ([]map[string]interf
 		return nil, err
 	}
 
-	var result []map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
+	var results []map[string]interface{}
+	if err := json.Unmarshal(body, &results); err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return results, nil
 }
 
 func getRepoStargazersCount(repo string, token string) (int, error) {
@@ -57,26 +57,146 @@ func getRepoStargazersCount(repo string, token string) (int, error) {
 	return int(stargazersCount), nil
 }
 
-func getStarsForMonthAgo(repo, token string) ([]map[string]interface{}, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d&page=%d", repo, defaultPerPage, defaultPage)
+// func getStarsInfo(repo, token string) ([]map[string]interface{}, error) {
+// 	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d&page=503", repo, defaultPerPage)
+
+// 	client := NewHttpClient(url, http.MethodGet, token)
+// 	res, err := client.SendRequest()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer res.Body.Close()
+// 	log.Println(res.Header["Link"])
+
+// 	err = validateStatusCode(res.StatusCode)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	body, err := io.ReadAll(res.Body)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	var results []map[string]interface{}
+// 	if err := json.Unmarshal(body, &results); err != nil {
+// 		log.Println(err)
+// 		return nil, err
+// 	}
+
+// 	log.Println(results[0]["starred_at"]) //スターをつけた日付
+// 	// log.Println(results[1])
+// 	log.Println(len(results))
+
+//		return nil, nil
+//		// return result, nil
+//	}
+func getStarsInfo(repo, token string) (*http.Response, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d&page=503", repo, defaultPerPage)
 
 	client := NewHttpClient(url, http.MethodGet, token)
-	body, err := client.Execute()
+	res, err := client.SendRequest()
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
-	var result []map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		log.Println(err)
+	return res, nil
+}
+
+type StarRecord struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
+
+func getRepoStarRecords(repo string, token string, maxRequestAmount int) ([]StarRecord, error) {
+	patchRes, err := getStarsInfo(repo, token)
+	if err != nil {
 		return nil, err
 	}
+	// log.Println(patchRes.Header["Link"])
 
-	log.Println(result[0])
-	log.Println(result[1])
+	headerLink := patchRes.Header["Link"]
+	pageCount := 1
+	if headerLink[0] != "" {
+		log.Println(headerLink[0])
+		var nextPage, lastPage string
+		fmt.Sscanf(headerLink[0], "<%s>; rel=\"next\", <%s>; rel=\"last\"", &nextPage, &lastPage)
+		fmt.Sscanf(lastPage, "&page=%d", &pageCount)
+		log.Println(nextPage)
+		log.Println(lastPage)
+	}
 
 	return nil, nil
-	// return result, nil
+
+	// if pageCount == 1 && len(patchRes.Data) == 0 {
+	// 	return nil, fmt.Errorf("no stargazers found")
+	// }
+
+	// var requestPages []int
+	// if pageCount < maxRequestAmount {
+	// 	requestPages = make([]int, pageCount)
+	// 	for i := range requestPages {
+	// 		requestPages[i] = i + 1
+	// 	}
+	// } else {
+	// 	requestPages = make([]int, maxRequestAmount)
+	// 	for i := range requestPages {
+	// 		requestPages[i] = int((float64(i) * float64(pageCount)) / float64(maxRequestAmount))
+	// 	}
+	// 	if requestPages[0] != 1 {
+	// 		requestPages = append([]int{1}, requestPages...)
+	// 	}
+	// }
+
+	// resArray := make([]repoStargazersResponse, len(requestPages))
+	// for i, page := range requestPages {
+	// 	res, err := getRepoStargazers(repo, token, page)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	resArray[i] = *res
+	// }
+
+	// starRecordsMap := make(map[string]int)
+	// if len(requestPages) < maxRequestAmount {
+	// 	var starRecordsData []struct {
+	// 		StarredAt string `json:"starred_at"`
+	// 	}
+	// 	for _, res := range resArray {
+	// 		starRecordsData = append(starRecordsData, res.Data...)
+	// 	}
+	// 	for i := 0; i < len(starRecordsData); {
+	// 		starRecordsMap[GetDateString(starRecordsData[i].StarredAt)] = i + 1
+	// 		i += len(starRecordsData) / maxRequestAmount
+	// 		if i == len(starRecordsData) {
+	// 			i--
+	// 		}
+	// 	}
+	// } else {
+	// 	for i, res := range resArray {
+	// 		if len(res.Data) > 0 {
+	// 			starRecord := res.Data[0]
+	// 			starRecordsMap[GetDateString(starRecord.StarredAt)] = defaultPerPage * (requestPages[i] - 1)
+	// 		}
+	// 	}
+	// }
+
+	// starAmount, err := getRepoStargazersCount(repo, token)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// starRecordsMap[GetDateString(time.Now().Unix())] = starAmount
+
+	// starRecords := make([]StarRecord, 0, len(starRecordsMap))
+	// for date, count := range starRecordsMap {
+	// 	starRecords = append(starRecords, StarRecord{
+	// 		Date:  date,
+	// 		Count: count,
+	// 	})
+	// }
+
+	// return starRecords, nil
 }
 
 type GithubUser struct {
@@ -110,95 +230,6 @@ func getRepoLogoUrl(repo string, token string) (string, error) {
 
 	return user.AvatarURL, nil
 }
-
-// type StarRecord struct {
-// 	Date  string `json:"date"`
-// 	Count int    `json:"count"`
-// }
-
-// func GetRepoStarRecords(repo string, token string, maxRequestAmount int) ([]StarRecord, error) {
-// 	patchRes, err := getRepoStargazers(repo, token, 0)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	headerLink := patchRes.Header.Get("link")
-// 	pageCount := 1
-// 	if headerLink != "" {
-// 		var nextPage, lastPage string
-// 		fmt.Sscanf(headerLink, "<%s>; rel=\"next\", <%s>; rel=\"last\"", &nextPage, &lastPage)
-// 		fmt.Sscanf(lastPage, "&page=%d", &pageCount)
-// 	}
-
-// 	if pageCount == 1 && len(patchRes.Data) == 0 {
-// 		return nil, fmt.Errorf("no stargazers found")
-// 	}
-
-// 	var requestPages []int
-// 	if pageCount < maxRequestAmount {
-// 		requestPages = make([]int, pageCount)
-// 		for i := range requestPages {
-// 			requestPages[i] = i + 1
-// 		}
-// 	} else {
-// 		requestPages = make([]int, maxRequestAmount)
-// 		for i := range requestPages {
-// 			requestPages[i] = int((float64(i) * float64(pageCount)) / float64(maxRequestAmount))
-// 		}
-// 		if requestPages[0] != 1 {
-// 			requestPages = append([]int{1}, requestPages...)
-// 		}
-// 	}
-
-// 	resArray := make([]repoStargazersResponse, len(requestPages))
-// 	for i, page := range requestPages {
-// 		res, err := getRepoStargazers(repo, token, page)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		resArray[i] = *res
-// 	}
-
-// 	starRecordsMap := make(map[string]int)
-// 	if len(requestPages) < maxRequestAmount {
-// 		var starRecordsData []struct {
-// 			StarredAt string `json:"starred_at"`
-// 		}
-// 		for _, res := range resArray {
-// 			starRecordsData = append(starRecordsData, res.Data...)
-// 		}
-// 		for i := 0; i < len(starRecordsData); {
-// 			starRecordsMap[GetDateString(starRecordsData[i].StarredAt)] = i + 1
-// 			i += len(starRecordsData) / maxRequestAmount
-// 			if i == len(starRecordsData) {
-// 				i--
-// 			}
-// 		}
-// 	} else {
-// 		for i, res := range resArray {
-// 			if len(res.Data) > 0 {
-// 				starRecord := res.Data[0]
-// 				starRecordsMap[GetDateString(starRecord.StarredAt)] = defaultPerPage * (requestPages[i] - 1)
-// 			}
-// 		}
-// 	}
-
-// 	starAmount, err := getRepoStargazersCount(repo, token)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	starRecordsMap[GetDateString(time.Now().Unix())] = starAmount
-
-// 	starRecords := make([]StarRecord, 0, len(starRecordsMap))
-// 	for date, count := range starRecordsMap {
-// 		starRecords = append(starRecords, StarRecord{
-// 			Date:  date,
-// 			Count: count,
-// 		})
-// 	}
-
-// 	return starRecords, nil
-// }
 
 // func GetDateString(t interface{}, format string) string {
 // 	var ts int64

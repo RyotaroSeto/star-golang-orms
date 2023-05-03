@@ -2,7 +2,10 @@ module get-star-golang-orm
 
 go 1.20
 
-require github.com/spf13/viper v1.15.0
+require (
+	github.com/pkg/errors v0.9.1
+	github.com/spf13/viper v1.15.0
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect

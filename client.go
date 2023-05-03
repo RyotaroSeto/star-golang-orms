@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -19,15 +18,9 @@ func (c *HttpClient) Execute() ([]byte, error) {
 	}
 	defer res.Body.Close()
 
-	switch res.StatusCode {
-	case 304:
-		return nil, fmt.Errorf("failed to not modified: %s", res.Status)
-	case 401:
-		return nil, fmt.Errorf("failed to requires authentication: %s", res.Status)
-	case 403:
-		return nil, fmt.Errorf("failed to forbidden: %s", res.Status)
-	case 422:
-		return nil, fmt.Errorf("failed to endpoint has been spammed: %s", res.Status)
+	err = validateStatusCode(res.StatusCode)
+	if err != nil {
+		return nil, err
 	}
 
 	body, err := io.ReadAll(res.Body)
