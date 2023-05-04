@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -114,24 +115,23 @@ func getRepoStarRecords(repo string, token string, maxRequestAmount int) ([]Star
 	if err != nil {
 		return nil, err
 	}
-	// log.Println(patchRes.Header["Link"])
 
 	headerLink := patchRes.Header["Link"]
-	pageCount := 1
 	if headerLink[0] != "" {
-		log.Println(headerLink[0])
 		var nextPage, lastPage string
-		fmt.Sscanf(headerLink[0], "<%s>; rel=\"next\", <%s>; rel=\"last\"", &nextPage, &lastPage)
-		fmt.Sscanf(lastPage, "&page=%d", &pageCount)
-		log.Println(nextPage)
-		log.Println(lastPage)
+		nextRe := regexp.MustCompile("<([^>]+)>; rel=\"next\"")
+		nextMatch := nextRe.FindStringSubmatch(headerLink[0])
+		nextPage = nextMatch[1]
+
+		lastRe := regexp.MustCompile("<([^>]+)>; rel=\"last\"")
+		lastMatch := lastRe.FindStringSubmatch(headerLink[0])
+		lastPage = lastMatch[1]
+
+		fmt.Println(nextPage)
+		fmt.Println(lastPage)
 	}
 
 	return nil, nil
-
-	// if pageCount == 1 && len(patchRes.Data) == 0 {
-	// 	return nil, fmt.Errorf("no stargazers found")
-	// }
 
 	// var requestPages []int
 	// if pageCount < maxRequestAmount {
