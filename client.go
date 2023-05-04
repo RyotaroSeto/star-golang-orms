@@ -55,9 +55,11 @@ func (c *HttpClient) setRequestHeader(req *http.Request) {
 
 func NewHttpClient(url string, method string, token string) *HttpClient {
 	var hc HttpClient
-	hc.requestHeader = map[string]string{"Connection": "keep-alive"}
-	hc.requestHeader = map[string]string{"Authorization": "token " + token}
-	hc.requestHeader = map[string]string{"Accept": "application/vnd.github.v3.star+json"}
+	hc.requestHeader = map[string]string{
+		"Con1nection":   "keep-alive",
+		"Authorization": "token " + token,
+		"Accept":        "application/vnd.github.v3.star+json",
+	}
 	return &HttpClient{
 		url:           url,
 		method:        method,
