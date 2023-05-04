@@ -111,12 +111,12 @@ type StarRecord struct {
 }
 
 func getRepoStarRecords(repo string, token string, maxRequestAmount int) ([]StarRecord, error) {
-	patchRes, err := getStarsInfo(repo, token)
+	starInfo, err := getStarsInfo(repo, token)
 	if err != nil {
 		return nil, err
 	}
 
-	headerLink := patchRes.Header["Link"]
+	headerLink := starInfo.Header["Link"]
 	if headerLink[0] != "" {
 		var nextPage, lastPage string
 		nextRe := regexp.MustCompile("<([^>]+)>; rel=\"next\"")
