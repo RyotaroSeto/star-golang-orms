@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
@@ -105,6 +104,17 @@ func getStarsInfo(repo, token string) (*http.Response, error) {
 	return res, nil
 }
 
+func RepoStargazers(token string, url string) (*http.Response, error) {
+	client := NewHttpClient(url, http.MethodGet, token)
+	res, err := client.SendRequest()
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	return res, nil
+}
+
 type StarRecord struct {
 	Date  string `json:"date"`
 	Count int    `json:"count"`
@@ -117,18 +127,24 @@ func getRepoStarRecords(repo string, token string, maxRequestAmount int) ([]Star
 	}
 
 	headerLink := starInfo.Header["Link"]
-	if headerLink[0] != "" {
-		var nextPage, lastPage string
-		nextRe := regexp.MustCompile("<([^>]+)>; rel=\"next\"")
-		nextMatch := nextRe.FindStringSubmatch(headerLink[0])
-		nextPage = nextMatch[1]
+	if headerLink[0] == "" {
+		return nil, nil
+	}
 
-		lastRe := regexp.MustCompile("<([^>]+)>; rel=\"last\"")
-		lastMatch := lastRe.FindStringSubmatch(headerLink[0])
-		lastPage = lastMatch[1]
+	for {
+		nextPage, lastPage := getStarPageURL(headerLink[0])
 
 		fmt.Println(nextPage)
 		fmt.Println(lastPage)
+		starInfo, err = RepoStargazers(token, nextPage)
+		if err != nil {
+			return nil, err
+		}
+		headerLink = starInfo.Header["Link"]
+		break
+		if headerLink[0] == "" {
+			break
+		}
 	}
 
 	return nil, nil
