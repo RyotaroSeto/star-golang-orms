@@ -1,4 +1,4 @@
-module get-star-golang-orm
+module star-golang-orms
 
 go 1.20
 

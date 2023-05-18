@@ -1,1 +1,1 @@
-# get-star-golang-orm
+# star-golang-orms
