@@ -132,7 +132,8 @@ func getRepoStarRecords(repo string, token string, maxRequestAmount int) ([]Star
 	}
 
 	for {
-		nextPage, lastPage := getStarPageURL(headerLink[0])
+		nextPage := getNextPageURL(headerLink[0])
+		lastPage := getLastPageURL(headerLink[0])
 
 		fmt.Println(nextPage)
 		fmt.Println(lastPage)
