@@ -1,6 +1,8 @@
 package pkg
 
 var TargetRepository = []string{
-	// "beego/beego",
+	"beego/beego",
+	"volatiletech/sqlboiler",
 	"uptrace/bun",
+	"go-pg/pg",
 }

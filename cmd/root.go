@@ -21,20 +21,20 @@ func Execute() {
 	// 	go internal.GetRepo(repoNm, config.GithubToken)
 	// }
 
-	// repos, detaiRepos, err := ExecGitHubAPI(config.GithubToken)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// err = internal.Edit(repos, detaiRepos)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	err = internal.GetRateLimit(config.GithubToken)
+	repos, detaiRepos, err := ExecGitHubAPI(config.GithubToken)
 	if err != nil {
 		log.Println(err)
 	}
+
+	err = internal.Edit(repos, detaiRepos)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// err = internal.GetRateLimit(config.GithubToken)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 }
 
 func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.CheckMouth, error) {
@@ -44,6 +44,7 @@ func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.CheckM
 	var repos []internal.GithubRepository
 	var detaiRepos []internal.CheckMouth
 	for _, repoNm := range pkg.TargetRepository {
+		log.Println("start:" + repoNm)
 		repo, err := internal.NowGithubRepoCount(ctx, repoNm, token)
 		if err != nil {
 			log.Println(err)
@@ -73,6 +74,8 @@ func NewCtx() (context.Context, context.CancelFunc) {
 }
 
 // 間隔調整
+
+// 取得したリポジトリをスター数順にソート
 
 // goroutin を途中キャンセルできるように
 
