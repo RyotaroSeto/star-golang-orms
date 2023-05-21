@@ -4,6 +4,7 @@ import (
 	"log"
 	"star-golang-orms/configs"
 	"star-golang-orms/internal"
+	"star-golang-orms/pkg"
 )
 
 func Execute() {
@@ -12,23 +13,20 @@ func Execute() {
 		log.Fatal("cannot load config", err)
 	}
 
-	// repoName := "beego/beego"
-	repoName := "uptrace/bun"
-	// repoName := ""
-	accessToken := config.GithubToken
+	targetRepositorys := pkg.TargetRepository
 
-	// res, err := getRepoStarRecords(repo, accessToken, 1)
-	// res, err := getRepoLogoUrl(repoName, accessToken)
-	// res, err := nowGithubRepoCount(repoName, accessToken)
-	// res, err := getRepo(repoName, accessToken)
+	// res, err := getRepoStarRecords(repo, config.GithubToken, 1)
+	// res, err := getRepoLogoUrl(targetRepositorys[0], config.GithubToken)
+	// res, err := nowGithubRepoCount(targetRepositorys[0], config.GithubToken)
+	// res, err := getRepo(targetRepositorys[0], config.GithubToken)
 
 	ctx, cancel := internal.NewCtx()
 	defer cancel()
-	repo, err := internal.NowGithubRepoCount(repoName, accessToken)
+	repo, err := internal.NowGithubRepoCount(targetRepositorys[0], config.GithubToken)
 	if err != nil {
 		log.Println(err)
 	}
-	res, err := internal.GetStargazersPage(ctx, *repo, 10, accessToken)
+	res, err := internal.GetStargazersPage(ctx, *repo, 10, config.GithubToken)
 	if err != nil {
 		return
 	}
