@@ -52,6 +52,7 @@ type GithubRepository struct {
 
 type CheckMouth struct {
 	RepoName        string
+	RepoURL         string
 	StarCount202111 int
 	StarCount202204 int
 	StarCount202301 int
@@ -87,7 +88,7 @@ func editREADME(w io.Writer, repos []GithubRepository, detaiRepos []CheckMouth) 
 			repo.UpdatedAt.Format("2006-01-02 15:04:05"))
 	}
 	for _, detaiRepo := range detaiRepos {
-		fmt.Fprint(w, "## "+detaiRepo.RepoName+"\n")
+		fmt.Fprintf(w, "## [%s](%s)\n", detaiRepo.RepoName, detaiRepo.RepoURL)
 		fmt.Fprint(w, detailHeader)
 		fmt.Fprintf(w, "| %d | %d | %d | %d | %d |\n",
 			detaiRepo.StarCount202111,
@@ -150,6 +151,7 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Ch
 
 	var cm CheckMouth
 	cm.RepoName = strings.Split(name, "/")[1]
+	cm.RepoURL = repo.URL
 	for _, star := range stargazers {
 		if star.StarredAt < "2021-11-01 00:00:00 +0000 UTC" {
 			cm.StarCount202111++

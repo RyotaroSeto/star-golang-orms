@@ -5,4 +5,6 @@ var TargetRepository = []string{
 	"volatiletech/sqlboiler",
 	"uptrace/bun",
 	"go-pg/pg",
+	"go-xorm/xorm",
+	"jmoiron/sqlx",
 }
