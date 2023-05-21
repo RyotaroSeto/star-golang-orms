@@ -1,8 +1,7 @@
-package main
+package pkg
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -10,26 +9,6 @@ type HttpClient struct {
 	url           string
 	method        string
 	requestHeader map[string]string
-}
-
-func (c *HttpClient) Execute() ([]byte, error) {
-	res, err := c.SendRequest()
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	err = validateStatusCode(res.StatusCode)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
 }
 
 func (c *HttpClient) SendRequest() (*http.Response, error) {

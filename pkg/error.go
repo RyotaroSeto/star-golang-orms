@@ -1,10 +1,10 @@
-package main
+package pkg
 
 import (
 	"github.com/pkg/errors"
 )
 
-func validateStatusCode(statusCode int) error {
+func ValidateStatusCode(statusCode int) error {
 	switch statusCode {
 	case 304:
 		return errors.Errorf("failed to not modified: %s", statusCode)
