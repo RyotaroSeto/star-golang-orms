@@ -1,5 +1,35 @@
 package pkg
 
+// func Edit(repos []internal.GithubRepository) error {
+// 	readme, err := os.Create("../README.md")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer func() {
+// 		_ = readme.Close()
+// 	}()
+// 	editREADME(readme, repos)
+
+// 	return nil
+// }
+
+// func editREADME(w io.Writer, repos []internal.GithubRepository) {
+// 	fmt.Fprint(w, repos)
+// 	for _, repo := range repos {
+// 		fmt.Fprintf(w, "| [%s](%s) | %s | %d | %d | %d | %d | %d | %v | %v |\n",
+// 			repo.FullName,
+// 			repo.URL,
+// 			repo.Description,
+// 			repo.StargazersCount,
+// 			repo.SubscribersCount,
+// 			repo.ForksCount,
+// 			repo.OpenIssuesCount,
+// 			repo.CreatedAt.Format("2006-01-02 15:04:05"),
+// 			repo.UpdatedAt.Format("2006-01-02 15:04:05"))
+// 	}
+// 	// fmt.Fprintf(w, tail, flextime.Now().Format(time.RFC3339))
+// }
+
 // fp, err := os.Open("./bun.txt")
 // if err != nil {
 // 	panic(err)

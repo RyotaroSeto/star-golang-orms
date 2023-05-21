@@ -9,56 +9,121 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
+	"star-golang-orms/pkg"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
-
-	"star-golang-orms/pkg"
 
 	"golang.org/x/sync/errgroup"
 )
 
+const baseURL = "https://api.github.com/"
+
+const (
+	header = `# Go ORMapper
+
+| Project Name | Stars | Subscribers | Forks | Open Issues | Description | Create Update | Last Update |
+| ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
+`
+)
+
 type Stargazer struct {
-	StarredAt time.Time `json:"starred_at"`
+	StarredAt string `json:"starred_at"`
 }
 
 type GithubRepository struct {
-	FullName         string `json:"full_name"`
-	StargazersCount  int    `json:"stargazers_count"`
-	CreatedAt        string `json:"created_at"`
-	SubscribersCount int    `json:"subscribers_count"`
-	ForksCount       int    `json:"forks_count"`
+	FullName         string    `json:"full_name"`
+	URL              string    `json:"html_url"`
+	Description      string    `json:"description"`
+	StargazersCount  int       `json:"stargazers_count"`
+	SubscribersCount int       `json:"subscribers_count"`
+	ForksCount       int       `json:"forks_count"`
+	OpenIssuesCount  int       `json:"open_issues_count"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
-var (
-	errNoMorePages  = errors.New("no more pages to get")
-	ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
-)
+type CheckMouth struct {
+	StarCount202111 int
+	StarCount202204 int
+	StarCount202301 int
+	StarCount202302 int
+	StarCount202303 int
+}
 
-func getRepo(name, token string) (*http.Response, error) {
-	ctx, cancel := NewCtx()
-	defer cancel()
+type DetailRepository struct {
+	FullName string `json:"full_name"`
+}
 
-	repo, err := NowGithubRepoCount(name, token)
+func NewGitHub() []GithubRepository {
+	return []GithubRepository{}
+}
+
+func Edit(repos []GithubRepository, detaiRepos []CheckMouth) error {
+	readme, err := os.Create("./README.md")
 	if err != nil {
-		log.Println(err)
-		return nil, err
+		return err
 	}
-	log.Println(repo) //{uptrace/bun 2076 2021-05-03T11:40:52Z 24 157}
+	defer func() {
+		_ = readme.Close()
+	}()
+	editREADME(readme, repos, detaiRepos)
 
+	return nil
+}
+
+func editREADME(w io.Writer, repos []GithubRepository, detaiRepos []CheckMouth) {
+	fmt.Fprint(w, header)
+	for _, repo := range repos {
+		fmt.Fprintf(w, "| [%s](%s) | %d | %d | %d | %d | %s | %v | %v |\n",
+			repo.FullName,
+			repo.URL,
+			repo.StargazersCount,
+			repo.SubscribersCount,
+			repo.ForksCount,
+			repo.OpenIssuesCount,
+			repo.Description,
+			repo.CreatedAt.Format("2006-01-02 15:04:05"),
+			repo.UpdatedAt.Format("2006-01-02 15:04:05"))
+	}
+}
+
+func NowGithubRepoCount(ctx context.Context, name, token string) (GithubRepository, error) {
+	url := baseURL + fmt.Sprintf("repos/%s", name)
+	client := pkg.NewHttpClient(url, http.MethodGet, token)
+	res, err := client.SendRequest()
+	if err != nil {
+		return GithubRepository{}, err
+	}
+
+	bts, err := io.ReadAll(res.Body)
+	if err != nil {
+		return GithubRepository{}, err
+	}
+	defer res.Body.Close()
+
+	var repo GithubRepository
+	if res.StatusCode == http.StatusOK {
+		if err := json.Unmarshal(bts, &repo); err != nil {
+			return GithubRepository{}, err
+		}
+	}
+
+	return repo, nil
+}
+
+func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (CheckMouth, error) {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
 	var stargazers []Stargazer
-	for page := 1; page <= lastPage(*repo); page++ { //298回非同期する
+	for page := 1; page <= lastPage(repo); page++ {
 		sem <- true
 		page := page
 		eg.Go(func() error {
 			defer func() { <-sem }()
-			result, err := GetStargazersPage(ctx, *repo, page, token)
-			if errors.Is(err, errNoMorePages) {
+			result, err := GetStargazersPage(ctx, repo, page, token)
+			if errors.Is(err, pkg.ErrNoMorePages) {
 				log.Println(err)
 				return nil
 			}
@@ -73,48 +138,89 @@ func getRepo(name, token string) (*http.Response, error) {
 		})
 	}
 
-	// stargazers = append(stargazers, [{2017-07-07 02:50:15 +0000 UTC}])
-	log.Println(stargazers) //[{2017-07-07 02:50:15 +0000 UTC} {2017-07-07 05:06:33 +0000 UTC} {2017-07-07 10:56:49 +0000 UTC} {2017-07-07 11:25:36 +0000 UTC} {2017-07-07 19:42:38 +0000 UTC} {2017-07-08 01:06:01 +0000 UTC} ]
-
-	// 時期によってのカウントの処理
-
-	// READMEに書き込む処理
-	return nil, nil
-}
-
-func NowGithubRepoCount(repoName, token string) (*GithubRepository, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s", repoName)
-	client := pkg.NewHttpClient(url, http.MethodGet, token)
-	res, err := client.SendRequest()
-	if err != nil {
-		return nil, err
-	}
-
-	bts, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var repo GithubRepository
-	if res.StatusCode == http.StatusOK {
-		if err := json.Unmarshal(bts, &repo); err != nil {
-			return nil, err
+	var cm CheckMouth
+	for _, star := range stargazers {
+		if star.StarredAt < "2021-11-01 00:00:00 +0000 UTC" {
+			cm.StarCount202111++
 		}
+		if star.StarredAt < "2022-04-01 00:00:00 +0000 UTC" {
+			cm.StarCount202204++
+		}
+		if star.StarredAt < "2023-01-01 00:00:00 +0000 UTC" {
+			cm.StarCount202301++
+		}
+		if star.StarredAt < "2023-02-01 00:00:00 +0000 UTC" {
+			cm.StarCount202302++
+		}
+		if star.StarredAt < "2023-03-01 00:00:00 +0000 UTC" {
+			cm.StarCount202303++
+		}
+		fmt.Println(star.StarredAt)
+		break
 	}
 
-	return &repo, nil
+	return cm, nil
+
+	// stargazers = append(stargazers, [{2017-07-07 02:50:15 +0000 UTC}])
+	// log.Println(stargazers) //[{2017-07-07 02:50:15 +0000 UTC} {2017-07-07 05:06:33 +0000 UTC} {2017-07-07 10:56:49 +0000 UTC} {2017-07-07 11:25:36 +0000 UTC} {2017-07-07 19:42:38 +0000 UTC} {2017-07-08 01:06:01 +0000 UTC} ]
+
 }
 
-func stringToTime(str string) time.Time {
-	t, _ := time.Parse("2006-01-02 15:04:05 +0000 UTC", str)
-	return t
+// func GetRepo(ctx context.Context, name, token string) (GithubRepository, error) {
+// 	repo, err := NowGithubRepoCount(name, token)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return GithubRepository{}, err
+// 	}
+
+// 	sem := make(chan bool, 4)
+// 	var eg errgroup.Group
+// 	var lock sync.Mutex
+// 	var stargazers []Stargazer
+// 	for page := 1; page <= lastPage(*repo); page++ {
+// 		sem <- true
+// 		page := page
+// 		eg.Go(func() error {
+// 			defer func() { <-sem }()
+// 			result, err := GetStargazersPage(ctx, *repo, page, token)
+// 			if errors.Is(err, pkg.ErrNoMorePages) {
+// 				log.Println(err)
+// 				return nil
+// 			}
+// 			if err != nil {
+// 				log.Println(err)
+// 				return err
+// 			}
+// 			lock.Lock()
+// 			defer lock.Unlock()
+// 			stargazers = append(stargazers, result...)
+// 			return nil
+// 		})
+// 	}
+
+// 	return *repo, nil
+
+// 	// stargazers = append(stargazers, [{2017-07-07 02:50:15 +0000 UTC}])
+// 	// log.Println(stargazers) //[{2017-07-07 02:50:15 +0000 UTC} {2017-07-07 05:06:33 +0000 UTC} {2017-07-07 10:56:49 +0000 UTC} {2017-07-07 11:25:36 +0000 UTC} {2017-07-07 19:42:38 +0000 UTC} {2017-07-08 01:06:01 +0000 UTC} ]
+
+// 	// 時期によってのカウントの処理
+
+// 	// READMEに書き込む処理
+// }
+
+func lastPage(repo GithubRepository) int {
+	return totalPages(repo) + 1
+}
+
+func totalPages(repo GithubRepository) int {
+	pageSize := 100
+	return repo.StargazersCount / pageSize
 }
 
 func GetStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
 	var stars []Stargazer
 
-	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
+	url := baseURL + fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
 	client := pkg.NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
@@ -147,7 +253,7 @@ type GithubUser struct {
 
 func getRepoLogoUrl(repoName string, token string) (string, error) {
 	owner := strings.Split(repoName, "/")[0]
-	url := fmt.Sprintf("https://api.github.com/users/%s", owner)
+	url := baseURL + fmt.Sprintf("users/%s", owner)
 	client := pkg.NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
@@ -161,24 +267,4 @@ func getRepoLogoUrl(repoName string, token string) (string, error) {
 	defer res.Body.Close()
 
 	return user.AvatarURL, nil
-}
-
-func totalPages(repo GithubRepository) int {
-	pageSize := 100
-	return repo.StargazersCount / pageSize
-}
-
-func lastPage(repo GithubRepository) int {
-	return totalPages(repo) + 1
-}
-
-func NewCtx() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		trap := make(chan os.Signal, 1)
-		signal.Notify(trap, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
-		<-trap
-	}()
-
-	return ctx, cancel
 }

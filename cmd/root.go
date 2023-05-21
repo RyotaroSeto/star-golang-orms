@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
 	"star-golang-orms/configs"
 	"star-golang-orms/internal"
 	"star-golang-orms/pkg"
+	"syscall"
 )
 
 func Execute() {
@@ -13,46 +17,60 @@ func Execute() {
 		log.Fatal("cannot load config", err)
 	}
 
-	targetRepositorys := pkg.TargetRepository
+	// for _, repoNm := range pkg.TargetRepository {
+	// 	go internal.GetRepo(repoNm, config.GithubToken)
+	// }
 
-	// res, err := getRepoStarRecords(repo, config.GithubToken, 1)
-	// res, err := getRepoLogoUrl(targetRepositorys[0], config.GithubToken)
-	// res, err := nowGithubRepoCount(targetRepositorys[0], config.GithubToken)
-	// res, err := getRepo(targetRepositorys[0], config.GithubToken)
-
-	ctx, cancel := internal.NewCtx()
-	defer cancel()
-	repo, err := internal.NowGithubRepoCount(targetRepositorys[0], config.GithubToken)
+	repos, detaiRepos, err := ExecGitHubAPI(config.GithubToken)
 	if err != nil {
 		log.Println(err)
 	}
-	res, err := internal.GetStargazersPage(ctx, *repo, 10, config.GithubToken)
+
+	err = internal.Edit(repos, detaiRepos)
 	if err != nil {
-		return
+		log.Println(err)
 	}
-	log.Println(res)
 }
 
-//正確な値がとれないなら1ヶ月に1回取り込んで、READMEに書き込む？
-//最終的に値がほしいリポジトリをまとめてそれをgoroutinでとってくる
+func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.CheckMouth, error) {
+	ctx, cancel := NewCtx()
+	defer cancel()
 
-// 1リポジトリ以下をREADMEに書き込む
-// FullName         string `json:"full_name"`
-// StargazersCount  int    `json:"stargazers_count"`
-// CreatedAt        string `json:"created_at"`
+	var repos []internal.GithubRepository
+	var detaiRepos []internal.CheckMouth
+	for _, repoNm := range pkg.TargetRepository {
+		repo, err := internal.NowGithubRepoCount(ctx, repoNm, token)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		repos = append(repos, repo)
+		detaiRepo, err := internal.GetRepo(ctx, repoNm, token, repo)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		detaiRepos = append(detaiRepos, detaiRepo)
+	}
 
-// 複数リポジトリREADMEに書き込む
+	return repos, detaiRepos, nil
+}
+
+func NewCtx() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		trap := make(chan os.Signal, 1)
+		signal.Notify(trap, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
+		<-trap
+	}()
+
+	return ctx, cancel
+}
+
+// 各リポジトリごとにテーブルを作成しし、半年か3ヶ月ごとのスター数の数位をREADMEに
 
 // goroutin を途中キャンセルできるように
 
 // チャート設計
 
 // チャートをREADMEに書き込む
-
-// 現状、スター数のみだが他のカウントも取得するようにする
-// 1リポジトリ以下をREADMEに書き込む
-// FullName         string `json:"full_name"`
-// StargazersCount  int    `json:"stargazers_count"`
-// CreatedAt        string `json:"created_at"`
-// SubscribersCount int    `json:"subscribers_count"`
-// ForksCount       int    `json:"forks_count"`

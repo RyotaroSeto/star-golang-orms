@@ -1,6 +1,6 @@
 package pkg
 
 var TargetRepository = []string{
-	"beego/beego",
+	// "beego/beego",
 	"uptrace/bun",
 }

@@ -4,6 +4,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	ErrNoMorePages  = errors.New("no more pages to get")
+	ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
+)
+
 func ValidateStatusCode(statusCode int) error {
 	switch statusCode {
 	case 304:
