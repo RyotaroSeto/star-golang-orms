@@ -1,283 +1,181 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
+	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
-const defaultPerPage = 30
-const defaultPage = 1
-
-func getRepoStargazers(repo string, token string, page int) ([]map[string]interface{}, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d", repo, defaultPerPage)
-	if page != 0 {
-		url = fmt.Sprintf("%s&page=%d", url, page)
-	}
-
-	client := NewHttpClient(url, http.MethodGet, token)
-	body, err := client.Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	var results []map[string]interface{}
-	if err := json.Unmarshal(body, &results); err != nil {
-		return nil, err
-	}
-
-	return results, nil
+type Stargazer struct {
+	StarredAt time.Time `json:"starred_at"`
 }
 
-func getRepoStargazersCount(repo string, token string) (int, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s", repo)
-
-	client := NewHttpClient(url, http.MethodGet, token)
-	body, err := client.Execute()
-	if err != nil {
-		return 0, err
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return 0, err
-	}
-
-	stargazersCount, ok := result["stargazers_count"].(float64)
-	if !ok {
-		return 0, fmt.Errorf("failed to parse stargazers count")
-	}
-
-	log.Println(result["subscribers_count"])
-	log.Println(result["forks_count"])
-	log.Println(result["open_issues_count"])
-	log.Println(result["updated_at"])
-	return int(stargazersCount), nil
+type GithubRepository struct {
+	FullName         string `json:"full_name"`
+	StargazersCount  int    `json:"stargazers_count"`
+	CreatedAt        string `json:"created_at"`
+	SubscribersCount int    `json:"subscribers_count"`
+	ForksCount       int    `json:"forks_count"`
 }
 
-// func getStarsInfo(repo, token string) ([]map[string]interface{}, error) {
-// 	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d&page=503", repo, defaultPerPage)
+var (
+	errNoMorePages  = errors.New("no more pages to get")
+	ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
+)
 
-// 	client := NewHttpClient(url, http.MethodGet, token)
-// 	res, err := client.SendRequest()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer res.Body.Close()
-// 	log.Println(res.Header["Link"])
+func getRepo(name, token string) (*http.Response, error) {
+	ctx, cancel := NewCtx()
+	defer cancel()
 
-// 	err = validateStatusCode(res.StatusCode)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	repo, err := nowGithubRepoCount(name, token)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	log.Println(repo) //{uptrace/bun 2076 2021-05-03T11:40:52Z 24 157}
 
-// 	body, err := io.ReadAll(res.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	sem := make(chan bool, 4)
+	var eg errgroup.Group
+	var lock sync.Mutex
+	var stargazers []Stargazer
+	for page := 1; page <= lastPage(*repo); page++ { //298回非同期する
+		sem <- true
+		page := page
+		eg.Go(func() error {
+			defer func() { <-sem }()
+			result, err := getStargazersPage(ctx, *repo, page, token)
+			if errors.Is(err, errNoMorePages) {
+				log.Println(err)
+				return nil
+			}
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			lock.Lock()
+			defer lock.Unlock()
+			stargazers = append(stargazers, result...)
+			return nil
+		})
+	}
 
-// 	var results []map[string]interface{}
-// 	if err := json.Unmarshal(body, &results); err != nil {
-// 		log.Println(err)
-// 		return nil, err
-// 	}
+	// stargazers = append(stargazers, [{2017-07-07 02:50:15 +0000 UTC}])
+	log.Println(stargazers) //[{2017-07-07 02:50:15 +0000 UTC} {2017-07-07 05:06:33 +0000 UTC} {2017-07-07 10:56:49 +0000 UTC} {2017-07-07 11:25:36 +0000 UTC} {2017-07-07 19:42:38 +0000 UTC} {2017-07-08 01:06:01 +0000 UTC} ]
+	return nil, nil
+}
 
-// 	log.Println(results[0]["starred_at"]) //スターをつけた日付
-// 	// log.Println(results[1])
-// 	log.Println(len(results))
-
-//		return nil, nil
-//		// return result, nil
-//	}
-func getStarsInfo(repo, token string) (*http.Response, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=%d&page=503", repo, defaultPerPage)
-
+func nowGithubRepoCount(repoName, token string) (*GithubRepository, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s", repoName)
 	client := NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
-	return res, nil
-}
-
-func RepoStargazers(token string, url string) (*http.Response, error) {
-	client := NewHttpClient(url, http.MethodGet, token)
-	res, err := client.SendRequest()
+	bts, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 
-	return res, nil
-}
-
-type StarRecord struct {
-	Date  string `json:"date"`
-	Count int    `json:"count"`
-}
-
-func getRepoStarRecords(repo string, token string, maxRequestAmount int) ([]StarRecord, error) {
-	starInfo, err := getStarsInfo(repo, token)
-	if err != nil {
-		return nil, err
-	}
-
-	headerLink := starInfo.Header["Link"]
-	if headerLink[0] == "" {
-		return nil, nil
-	}
-
-	for {
-		nextPage := getNextPageURL(headerLink[0])
-		lastPage := getLastPageURL(headerLink[0])
-
-		fmt.Println(nextPage)
-		fmt.Println(lastPage)
-		starInfo, err = RepoStargazers(token, nextPage)
-		if err != nil {
+	var repo GithubRepository
+	if res.StatusCode == http.StatusOK {
+		if err := json.Unmarshal(bts, &repo); err != nil {
 			return nil, err
 		}
-		headerLink = starInfo.Header["Link"]
-		break
-		if headerLink[0] == "" {
-			break
-		}
 	}
 
-	return nil, nil
+	return &repo, nil
+}
 
-	// var requestPages []int
-	// if pageCount < maxRequestAmount {
-	// 	requestPages = make([]int, pageCount)
-	// 	for i := range requestPages {
-	// 		requestPages[i] = i + 1
-	// 	}
-	// } else {
-	// 	requestPages = make([]int, maxRequestAmount)
-	// 	for i := range requestPages {
-	// 		requestPages[i] = int((float64(i) * float64(pageCount)) / float64(maxRequestAmount))
-	// 	}
-	// 	if requestPages[0] != 1 {
-	// 		requestPages = append([]int{1}, requestPages...)
-	// 	}
-	// }
+func stringToTime(str string) time.Time {
+	t, _ := time.Parse("2006-01-02 15:04:05 +0000 UTC", str)
+	return t
+}
 
-	// resArray := make([]repoStargazersResponse, len(requestPages))
-	// for i, page := range requestPages {
-	// 	res, err := getRepoStargazers(repo, token, page)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	resArray[i] = *res
-	// }
+func getStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
+	var stars []Stargazer
 
-	// starRecordsMap := make(map[string]int)
-	// if len(requestPages) < maxRequestAmount {
-	// 	var starRecordsData []struct {
-	// 		StarredAt string `json:"starred_at"`
-	// 	}
-	// 	for _, res := range resArray {
-	// 		starRecordsData = append(starRecordsData, res.Data...)
-	// 	}
-	// 	for i := 0; i < len(starRecordsData); {
-	// 		starRecordsMap[GetDateString(starRecordsData[i].StarredAt)] = i + 1
-	// 		i += len(starRecordsData) / maxRequestAmount
-	// 		if i == len(starRecordsData) {
-	// 			i--
-	// 		}
-	// 	}
-	// } else {
-	// 	for i, res := range resArray {
-	// 		if len(res.Data) > 0 {
-	// 			starRecord := res.Data[0]
-	// 			starRecordsMap[GetDateString(starRecord.StarredAt)] = defaultPerPage * (requestPages[i] - 1)
-	// 		}
-	// 	}
-	// }
+	url := fmt.Sprintf("https://api.github.com/repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
+	client := NewHttpClient(url, http.MethodGet, token)
+	resp, err := client.SendRequest()
+	if err != nil {
+		return nil, err
+	}
 
-	// starAmount, err := getRepoStargazersCount(repo, token)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// starRecordsMap[GetDateString(time.Now().Unix())] = starAmount
+	bts, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return stars, err
+	}
+	defer resp.Body.Close()
 
-	// starRecords := make([]StarRecord, 0, len(starRecordsMap))
-	// for date, count := range starRecordsMap {
-	// 	starRecords = append(starRecords, StarRecord{
-	// 		Date:  date,
-	// 		Count: count,
-	// 	})
-	// }
-
-	// return starRecords, nil
+	switch resp.StatusCode {
+	case http.StatusOK:
+		if err := json.Unmarshal(bts, &stars); err != nil {
+			return nil, err
+		}
+		if len(stars) == 0 {
+			return nil, fmt.Errorf("スターなし")
+		}
+		log.Println("-----")
+		log.Println(stars)
+		log.Println("-----")
+		return stars, nil
+	default:
+		return nil, fmt.Errorf("その他のエラー")
+	}
 }
 
 type GithubUser struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
-func getRepoLogoUrl(repo string, token string) (string, error) {
-	owner := strings.Split(repo, "/")[0]
+func getRepoLogoUrl(repoName string, token string) (string, error) {
+	owner := strings.Split(repoName, "/")[0]
 	url := fmt.Sprintf("https://api.github.com/users/%s", owner)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	client := NewHttpClient(url, http.MethodGet, token)
+	res, err := client.SendRequest()
 	if err != nil {
 		return "", err
 	}
 
-	req.Header.Set("Accept", "application/vnd.github.v3.star+json")
-	if token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("token %s", token))
-	}
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-
-	defer res.Body.Close()
 	var user GithubUser
 	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
 		return "", err
 	}
+	defer res.Body.Close()
 
 	return user.AvatarURL, nil
 }
 
-// func GetDateString(t interface{}, format string) string {
-// 	var ts int64
-// 	switch v := t.(type) {
-// 	case int64:
-// 		ts = int64(v)
-// 	case int:
-// 		ts = int64(v)
-// 	case string:
-// 		parsed, err := strconv.Atoi(v)
-// 		if err != nil {
-// 			panic(fmt.Sprintf("unable to parse timestamp: %s", v))
-// 		}
-// 		ts = int64(parsed)
-// 	case time.Time:
-// 		ts = v.Unix()
-// 	default:
-// 		panic("unsupported input type")
-// 	}
+func totalPages(repo GithubRepository) int {
+	pageSize := 100
+	return repo.StargazersCount / pageSize
+}
 
-// 	d := time.Unix(ts, 0)
-// 	year, month, date := d.Date()
-// 	hours, minutes, seconds := d.Clock()
+func lastPage(repo GithubRepository) int {
+	return totalPages(repo) + 1
+}
 
-// 	formattedString := format
-// 	formattedString = regexp.MustCompile("yyyy").ReplaceAllString(formattedString, strconv.Itoa(year))
-// 	formattedString = regexp.MustCompile("MM").ReplaceAllString(formattedString, strconv.Itoa(int(month)))
-// 	formattedString = regexp.MustCompile("dd").ReplaceAllString(formattedString, strconv.Itoa(date))
-// 	formattedString = regexp.MustCompile("hh").ReplaceAllString(formattedString, strconv.Itoa(hours))
-// 	formattedString = regexp.MustCompile("mm").ReplaceAllString(formattedString, strconv.Itoa(minutes))
-// 	formattedString = regexp.MustCompile("ss").ReplaceAllString(formattedString, strconv.Itoa(seconds))
+func NewCtx() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		trap := make(chan os.Signal, 1)
+		signal.Notify(trap, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
+		<-trap
+	}()
 
-// 	return formattedString
-// }
+	return ctx, cancel
+}

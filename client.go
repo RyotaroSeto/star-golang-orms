@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -57,7 +58,7 @@ func NewHttpClient(url string, method string, token string) *HttpClient {
 	var hc HttpClient
 	hc.requestHeader = map[string]string{
 		"Connection":    "keep-alive",
-		"Authorization": "token " + token,
+		"Authorization": fmt.Sprintf("token %s", token),
 		"Accept":        "application/vnd.github.v3.star+json",
 	}
 	return &HttpClient{
