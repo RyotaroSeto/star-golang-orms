@@ -17,13 +17,20 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-const baseURL = "https://api.github.com/"
+const (
+	baseURL   = "https://api.github.com/"
+	rateLimit = "rate_limit"
+)
 
 const (
-	header = `# Go ORMapper
+	header = `# Golang ORMapper
 
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Create Update | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
+`
+	detailHeader = `
+| 202111 | 202204 | 202301 | 202302 | 202303 |
+| ------ | ------ | ------ | ------ | ------ |
 `
 )
 
@@ -44,19 +51,12 @@ type GithubRepository struct {
 }
 
 type CheckMouth struct {
+	RepoName        string
 	StarCount202111 int
 	StarCount202204 int
 	StarCount202301 int
 	StarCount202302 int
 	StarCount202303 int
-}
-
-type DetailRepository struct {
-	FullName string `json:"full_name"`
-}
-
-func NewGitHub() []GithubRepository {
-	return []GithubRepository{}
 }
 
 func Edit(repos []GithubRepository, detaiRepos []CheckMouth) error {
@@ -85,6 +85,16 @@ func editREADME(w io.Writer, repos []GithubRepository, detaiRepos []CheckMouth) 
 			repo.Description,
 			repo.CreatedAt.Format("2006-01-02 15:04:05"),
 			repo.UpdatedAt.Format("2006-01-02 15:04:05"))
+	}
+	for _, detaiRepo := range detaiRepos {
+		fmt.Fprint(w, "## "+detaiRepo.RepoName+"\n")
+		fmt.Fprint(w, detailHeader)
+		fmt.Fprintf(w, "| %d | %d | %d | %d | %d |\n",
+			detaiRepo.StarCount202111,
+			detaiRepo.StarCount202204,
+			detaiRepo.StarCount202301,
+			detaiRepo.StarCount202302,
+			detaiRepo.StarCount202303)
 	}
 }
 
@@ -139,6 +149,7 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Ch
 	}
 
 	var cm CheckMouth
+	cm.RepoName = strings.Split(name, "/")[1]
 	for _, star := range stargazers {
 		if star.StarredAt < "2021-11-01 00:00:00 +0000 UTC" {
 			cm.StarCount202111++
@@ -155,15 +166,9 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Ch
 		if star.StarredAt < "2023-03-01 00:00:00 +0000 UTC" {
 			cm.StarCount202303++
 		}
-		fmt.Println(star.StarredAt)
-		break
 	}
 
 	return cm, nil
-
-	// stargazers = append(stargazers, [{2017-07-07 02:50:15 +0000 UTC}])
-	// log.Println(stargazers) //[{2017-07-07 02:50:15 +0000 UTC} {2017-07-07 05:06:33 +0000 UTC} {2017-07-07 10:56:49 +0000 UTC} {2017-07-07 11:25:36 +0000 UTC} {2017-07-07 19:42:38 +0000 UTC} {2017-07-08 01:06:01 +0000 UTC} ]
-
 }
 
 // func GetRepo(ctx context.Context, name, token string) (GithubRepository, error) {
@@ -251,7 +256,7 @@ type GithubUser struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
-func getRepoLogoUrl(repoName string, token string) (string, error) {
+func GetRepoLogoUrl(repoName string, token string) (string, error) {
 	owner := strings.Split(repoName, "/")[0]
 	url := baseURL + fmt.Sprintf("users/%s", owner)
 	client := pkg.NewHttpClient(url, http.MethodGet, token)
@@ -267,4 +272,35 @@ func getRepoLogoUrl(repoName string, token string) (string, error) {
 	defer res.Body.Close()
 
 	return user.AvatarURL, nil
+}
+
+func GetRateLimit(token string) error {
+	url := baseURL + rateLimit
+	client := pkg.NewHttpClient(url, http.MethodGet, token)
+	res, err := client.SendRequest()
+	if err != nil {
+		return err
+	}
+
+	bts, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	switch res.StatusCode {
+	case http.StatusOK:
+		var r map[string]interface{}
+		if err := json.Unmarshal(bts, &r); err != nil {
+			return err
+		}
+		fmt.Println(r)
+		return nil
+	case http.StatusNotModified:
+		return fmt.Errorf("rate limit")
+	case http.StatusNotFound:
+		return fmt.Errorf("not Found")
+	default:
+		return fmt.Errorf("その他のエラー")
+	}
 }

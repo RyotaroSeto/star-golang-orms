@@ -21,12 +21,17 @@ func Execute() {
 	// 	go internal.GetRepo(repoNm, config.GithubToken)
 	// }
 
-	repos, detaiRepos, err := ExecGitHubAPI(config.GithubToken)
-	if err != nil {
-		log.Println(err)
-	}
+	// repos, detaiRepos, err := ExecGitHubAPI(config.GithubToken)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	err = internal.Edit(repos, detaiRepos)
+	// err = internal.Edit(repos, detaiRepos)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+
+	err = internal.GetRateLimit(config.GithubToken)
 	if err != nil {
 		log.Println(err)
 	}
@@ -67,7 +72,7 @@ func NewCtx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-// 各リポジトリごとにテーブルを作成しし、半年か3ヶ月ごとのスター数の数位をREADMEに
+// 間隔調整
 
 // goroutin を途中キャンセルできるように
 
