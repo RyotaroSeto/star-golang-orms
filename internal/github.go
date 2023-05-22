@@ -28,14 +28,12 @@ const (
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Create Update | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
-	detailHeader = `
-| 202111 | 202204 | 202301 | 202302 | 202303 |
-| ------ | ------ | ------ | ------ | ------ |
-`
+
+	divider = "|\n| --- | --- | --- | --- | --- | --- |\n"
 )
 
 type Stargazer struct {
-	StarredAt string `json:"starred_at"`
+	StarredAt time.Time `json:"starred_at"`
 }
 
 type GithubRepository struct {
@@ -51,13 +49,14 @@ type GithubRepository struct {
 }
 
 type CheckMouth struct {
-	RepoName        string
-	RepoURL         string
-	StarCount202111 int
-	StarCount202204 int
-	StarCount202301 int
-	StarCount202302 int
-	StarCount202303 int
+	RepoName            string
+	RepoURL             string
+	StarCount15MouthAgo int
+	StarCount12MouthAgo int
+	StarCount9MouthAgo  int
+	StarCount6MouthAgo  int
+	StarCount3MouthAgo  int
+	StarCountNow        int
 }
 
 func Edit(repos []GithubRepository, detaiRepos []CheckMouth) error {
@@ -73,30 +72,80 @@ func Edit(repos []GithubRepository, detaiRepos []CheckMouth) error {
 	return nil
 }
 
-func editREADME(w io.Writer, repos []GithubRepository, detaiRepos []CheckMouth) {
+func editREADME(w io.Writer, repos []GithubRepository, detailRepos []CheckMouth) {
+	writeHeader(w)
+	writeRepositories(w, repos)
+	writeDetailRepositories(w, detailRepos)
+}
+
+func writeHeader(w io.Writer) {
 	fmt.Fprint(w, header)
+}
+
+func writeRepoRow(w io.Writer, repo GithubRepository) {
+	rowFormat := "| [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
+	createdAt := repo.CreatedAt.Format("2006-01-02 15:04:05")
+	updatedAt := repo.UpdatedAt.Format("2006-01-02 15:04:05")
+
+	fmt.Fprintf(w, rowFormat, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
+}
+
+func writeRepositories(w io.Writer, repos []GithubRepository) {
 	for _, repo := range repos {
-		fmt.Fprintf(w, "| [%s](%s) | %d | %d | %d | %d | %s | %v | %v |\n",
-			repo.FullName,
-			repo.URL,
-			repo.StargazersCount,
-			repo.SubscribersCount,
-			repo.ForksCount,
-			repo.OpenIssuesCount,
-			repo.Description,
-			repo.CreatedAt.Format("2006-01-02 15:04:05"),
-			repo.UpdatedAt.Format("2006-01-02 15:04:05"))
+		writeRepoRow(w, repo)
 	}
-	for _, detaiRepo := range detaiRepos {
-		fmt.Fprintf(w, "## [%s](%s)\n", detaiRepo.RepoName, detaiRepo.RepoURL)
-		fmt.Fprint(w, detailHeader)
-		fmt.Fprintf(w, "| %d | %d | %d | %d | %d |\n",
-			detaiRepo.StarCount202111,
-			detaiRepo.StarCount202204,
-			detaiRepo.StarCount202301,
-			detaiRepo.StarCount202302,
-			detaiRepo.StarCount202303)
+}
+
+func writeDetailRepositories(w io.Writer, detailRepos []CheckMouth) {
+
+	for _, detailRepo := range detailRepos {
+		writeDetailRepo(w, detailRepo)
 	}
+}
+
+func writeDetailRepo(w io.Writer, detailRepo CheckMouth) {
+	repoHeader := fmt.Sprintf("## [%s](%s)\n", detailRepo.RepoName, detailRepo.RepoURL)
+	fmt.Fprint(w, repoHeader)
+
+	writeDetailRepoTable(w, detailRepo)
+}
+
+func writeDetailRepoTable(w io.Writer, detailRepo CheckMouth) {
+	fmt.Fprint(w, generateDetailRepoTableHeader())
+
+	rowFormat := "| %d | %d | %d | %d | %d | %d |\n"
+	fmt.Fprintf(w, rowFormat,
+		detailRepo.StarCount15MouthAgo,
+		detailRepo.StarCount12MouthAgo,
+		detailRepo.StarCount9MouthAgo,
+		detailRepo.StarCount6MouthAgo,
+		detailRepo.StarCount3MouthAgo,
+		detailRepo.StarCountNow)
+}
+
+func generateDetailRepoTableHeader() string {
+	detailHeader := ""
+
+	dates := generateDateHeaders()
+	for _, date := range dates {
+		detailHeader += "| " + date + " "
+	}
+	detailHeader += divider
+
+	return detailHeader
+}
+
+func generateDateHeaders() []string {
+	now := time.Now()
+	layout := "20060102"
+	dates := make([]string, 6)
+
+	for i := 0; i < 6; i++ {
+		date := now.AddDate(0, -3*i, 0)
+		dates[i] = date.Format(layout)
+	}
+
+	return dates
 }
 
 func NowGithubRepoCount(ctx context.Context, name, token string) (GithubRepository, error) {
@@ -153,20 +202,23 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Ch
 	cm.RepoName = strings.Split(name, "/")[1]
 	cm.RepoURL = repo.URL
 	for _, star := range stargazers {
-		if star.StarredAt < "2021-11-01 00:00:00 +0000 UTC" {
-			cm.StarCount202111++
+		if star.StarredAt.Before(time.Now().UTC()) {
+			cm.StarCountNow++
 		}
-		if star.StarredAt < "2022-04-01 00:00:00 +0000 UTC" {
-			cm.StarCount202204++
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -3, 0)) {
+			cm.StarCount3MouthAgo++
 		}
-		if star.StarredAt < "2023-01-01 00:00:00 +0000 UTC" {
-			cm.StarCount202301++
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -6, 0)) {
+			cm.StarCount6MouthAgo++
 		}
-		if star.StarredAt < "2023-02-01 00:00:00 +0000 UTC" {
-			cm.StarCount202302++
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -9, 0)) {
+			cm.StarCount9MouthAgo++
 		}
-		if star.StarredAt < "2023-03-01 00:00:00 +0000 UTC" {
-			cm.StarCount202303++
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -12, 0)) {
+			cm.StarCount12MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -15, 0)) {
+			cm.StarCount15MouthAgo++
 		}
 	}
 

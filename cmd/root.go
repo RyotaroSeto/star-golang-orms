@@ -73,7 +73,7 @@ func NewCtx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-// 間隔調整
+// リポジトリ作成日より前だったら「-」と出力する
 
 // 取得したリポジトリをスター数順にソート
 
