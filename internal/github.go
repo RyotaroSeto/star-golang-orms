@@ -20,16 +20,17 @@ import (
 const (
 	baseURL   = "https://api.github.com/"
 	rateLimit = "rate_limit"
-)
-
-const (
-	header = `# Golang ORMapper
+	header    = `# Golang ORMapper
 
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Create Update | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
 
 	divider = "|\n| --- | --- | --- | --- | --- | --- |\n"
+
+	README                     = "README.md"
+	yyyymmddFormat             = "20060102"
+	yyyymmddHHmmssHaihunFormat = "2006-01-02 15:04:05"
 )
 
 type Stargazer struct {
@@ -48,7 +49,7 @@ type GithubRepository struct {
 	UpdatedAt        time.Time `json:"updated_at"`
 }
 
-type CheckMouth struct {
+type ReadmeDetailsRepository struct {
 	RepoName            string
 	RepoURL             string
 	StarCount15MouthAgo int
@@ -59,8 +60,39 @@ type CheckMouth struct {
 	StarCountNow        int
 }
 
-func Edit(repos []GithubRepository, detaiRepos []CheckMouth) error {
-	readme, err := os.Create("./README.md")
+func NewDetailsRepository(repoName, repoURL string, stargazers []Stargazer) *ReadmeDetailsRepository {
+	var r ReadmeDetailsRepository
+	r.calculateStarCount(stargazers)
+	r.RepoName = strings.Split(repoName, "/")[1]
+	r.RepoURL = repoURL
+	return &r
+}
+
+func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
+	for _, star := range stargazers {
+		if star.StarredAt.Before(time.Now().UTC()) {
+			r.StarCountNow++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -3, 0)) {
+			r.StarCount3MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -6, 0)) {
+			r.StarCount6MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -9, 0)) {
+			r.StarCount9MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -12, 0)) {
+			r.StarCount12MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -15, 0)) {
+			r.StarCount15MouthAgo++
+		}
+	}
+}
+
+func Edit(repos []GithubRepository, detaiRepos []ReadmeDetailsRepository) error {
+	readme, err := os.Create("./" + README)
 	if err != nil {
 		return err
 	}
@@ -72,7 +104,7 @@ func Edit(repos []GithubRepository, detaiRepos []CheckMouth) error {
 	return nil
 }
 
-func editREADME(w io.Writer, repos []GithubRepository, detailRepos []CheckMouth) {
+func editREADME(w io.Writer, repos []GithubRepository, detailRepos []ReadmeDetailsRepository) {
 	writeHeader(w)
 	writeRepositories(w, repos)
 	writeDetailRepositories(w, detailRepos)
@@ -84,8 +116,8 @@ func writeHeader(w io.Writer) {
 
 func writeRepoRow(w io.Writer, repo GithubRepository) {
 	rowFormat := "| [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
-	createdAt := repo.CreatedAt.Format("2006-01-02 15:04:05")
-	updatedAt := repo.UpdatedAt.Format("2006-01-02 15:04:05")
+	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
+	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)
 
 	fmt.Fprintf(w, rowFormat, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
 }
@@ -96,31 +128,30 @@ func writeRepositories(w io.Writer, repos []GithubRepository) {
 	}
 }
 
-func writeDetailRepositories(w io.Writer, detailRepos []CheckMouth) {
-
-	for _, detailRepo := range detailRepos {
-		writeDetailRepo(w, detailRepo)
+func writeDetailRepositories(w io.Writer, detailRepos []ReadmeDetailsRepository) {
+	for _, d := range detailRepos {
+		d.writeDetailRepo(w)
 	}
 }
 
-func writeDetailRepo(w io.Writer, detailRepo CheckMouth) {
-	repoHeader := fmt.Sprintf("## [%s](%s)\n", detailRepo.RepoName, detailRepo.RepoURL)
+func (r ReadmeDetailsRepository) writeDetailRepo(w io.Writer) {
+	repoHeader := fmt.Sprintf("## [%s](%s)\n", r.RepoName, r.RepoURL)
 	fmt.Fprint(w, repoHeader)
 
-	writeDetailRepoTable(w, detailRepo)
+	r.writeDetailRepoTable(w)
 }
 
-func writeDetailRepoTable(w io.Writer, detailRepo CheckMouth) {
+func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
 	fmt.Fprint(w, generateDetailRepoTableHeader())
 
 	rowFormat := "| %d | %d | %d | %d | %d | %d |\n"
 	fmt.Fprintf(w, rowFormat,
-		detailRepo.StarCount15MouthAgo,
-		detailRepo.StarCount12MouthAgo,
-		detailRepo.StarCount9MouthAgo,
-		detailRepo.StarCount6MouthAgo,
-		detailRepo.StarCount3MouthAgo,
-		detailRepo.StarCountNow)
+		r.StarCount15MouthAgo,
+		r.StarCount12MouthAgo,
+		r.StarCount9MouthAgo,
+		r.StarCount6MouthAgo,
+		r.StarCount3MouthAgo,
+		r.StarCountNow)
 }
 
 func generateDetailRepoTableHeader() string {
@@ -137,12 +168,11 @@ func generateDetailRepoTableHeader() string {
 
 func generateDateHeaders() []string {
 	now := time.Now()
-	layout := "20060102"
 	dates := make([]string, 6)
 
 	for i := 0; i < 6; i++ {
 		date := now.AddDate(0, -3*i, 0)
-		dates[i] = date.Format(layout)
+		dates[i] = date.Format(yyyymmddFormat)
 	}
 
 	return dates
@@ -172,7 +202,7 @@ func NowGithubRepoCount(ctx context.Context, name, token string) (GithubReposito
 	return repo, nil
 }
 
-func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (CheckMouth, error) {
+func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (ReadmeDetailsRepository, error) {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
@@ -198,31 +228,8 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Ch
 		})
 	}
 
-	var cm CheckMouth
-	cm.RepoName = strings.Split(name, "/")[1]
-	cm.RepoURL = repo.URL
-	for _, star := range stargazers {
-		if star.StarredAt.Before(time.Now().UTC()) {
-			cm.StarCountNow++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -3, 0)) {
-			cm.StarCount3MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -6, 0)) {
-			cm.StarCount6MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -9, 0)) {
-			cm.StarCount9MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -12, 0)) {
-			cm.StarCount12MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -15, 0)) {
-			cm.StarCount15MouthAgo++
-		}
-	}
-
-	return cm, nil
+	detailsRepository := NewDetailsRepository(name, repo.URL, stargazers)
+	return *detailsRepository, nil
 }
 
 // func GetRepo(ctx context.Context, name, token string) (GithubRepository, error) {

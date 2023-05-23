@@ -37,12 +37,12 @@ func Execute() {
 	// }
 }
 
-func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.CheckMouth, error) {
+func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.ReadmeDetailsRepository, error) {
 	ctx, cancel := NewCtx()
 	defer cancel()
 
 	var repos []internal.GithubRepository
-	var detaiRepos []internal.CheckMouth
+	var detaiRepos []internal.ReadmeDetailsRepository
 	for _, repoNm := range pkg.TargetRepository {
 		log.Println("start:" + repoNm)
 		repo, err := internal.NowGithubRepoCount(ctx, repoNm, token)
