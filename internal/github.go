@@ -21,7 +21,8 @@ const (
 	baseURL   = "https://api.github.com/"
 	rateLimit = "rate_limit"
 	header    = `# Golang ORMapper Star
-Express information on golang ormapper in a clear manner. It also displays the number of stars at different times of the year.
+The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
+If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
 
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |

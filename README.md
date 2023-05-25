@@ -1,5 +1,6 @@
 # Golang ORMapper Star
-Express information on golang ormapper in a clear manner. It also displays the number of stars at different times of the year.
+The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
+If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
 
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
@@ -20,10 +21,6 @@ Express information on golang ormapper in a clear manner. It also displays the n
 | [go-reform/reform](https://github.com/go-reform/reform) | 1412 | 25 | 72 | 86 | A better ORM for Go, based on non-empty interfaces and code generation. | 2016-02-25 09:41:09 | 2023-05-15 19:01:41 |
 | [gobuffalo/pop](https://github.com/gobuffalo/pop) | 1328 | 23 | 237 | 96 | A Tasty Treat For All Your Database Needs | 2018-02-07 21:13:46 | 2023-05-23 06:20:19 |
 | [go-jet/jet](https://github.com/go-jet/jet) | 1280 | 18 | 76 | 21 | Type safe SQL builder with code generation and automatic query result data mapping | 2019-03-02 11:06:23 | 2023-05-25 11:19:26 |
-| [huandu/go-sqlbuilder](https://github.com/huandu/go-sqlbuilder) | 999 | 12 | 93 | 9 | A flexible and powerful SQL string builder library plus a zero-config ORM. | 2017-12-27 16:37:48 | 2023-05-25 15:44:18 |
-| [jirfag/go-queryset](https://github.com/jirfag/go-queryset) | 697 | 23 | 71 | 20 | 100% type-safe ORM for Go (Golang) with code generation and MySQL, PostgreSQL, Sqlite3, SQL Server support. GORM under the hood. | 2017-09-03 17:29:30 | 2023-04-24 02:17:47 |
-| [go-rel/rel](https://github.com/go-rel/rel) | 637 | 12 | 55 | 25 | :gem: Modern ORM for Golang - Testable, Extendable and Crafted Into a Clean and Elegant API | 2019-10-06 07:08:01 | 2023-05-23 19:27:28 |
-| [coocood/qbs](https://github.com/coocood/qbs) | 549 | 46 | 101 | 10 | QBS stands for Query By Struct. A Go ORM. | 2013-02-02 05:40:59 | 2023-05-12 03:39:29 |
 ## [gorm](https://github.com/go-gorm/gorm)
 | 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
 | --- | --- | --- | --- | --- | --- |
@@ -92,19 +89,3 @@ Express information on golang ormapper in a clear manner. It also displays the n
 | 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
 | --- | --- | --- | --- | --- | --- |
 | 323 | 400 | 518 | 700 | 800 | 900 |
-## [go-sqlbuilder](https://github.com/huandu/go-sqlbuilder)
-| 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
-| --- | --- | --- | --- | --- | --- |
-| 478 | 564 | 600 | 600 | 600 | 600 |
-## [go-queryset](https://github.com/jirfag/go-queryset)
-| 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
-| --- | --- | --- | --- | --- | --- |
-| 300 | 300 | 300 | 300 | 300 | 300 |
-## [rel](https://github.com/go-rel/rel)
-| 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
-| --- | --- | --- | --- | --- | --- |
-| 271 | 300 | 300 | 300 | 300 | 300 |
-## [qbs](https://github.com/coocood/qbs)
-| 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
-| --- | --- | --- | --- | --- | --- |
-| 200 | 200 | 200 | 200 | 200 | 200 |
