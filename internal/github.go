@@ -20,7 +20,8 @@ import (
 const (
 	baseURL   = "https://api.github.com/"
 	rateLimit = "rate_limit"
-	header    = `# Golang ORMapper
+	header    = `# Golang ORMapper Star
+Express information on golang ormapper in a clear manner. It also displays the number of stars at different times of the year.
 
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
@@ -212,7 +213,7 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Re
 		page := page
 		eg.Go(func() error {
 			defer func() { <-sem }()
-			result, err := GetStargazersPage(ctx, repo, page, token)
+			result, err := getStargazersPage(ctx, repo, page, token)
 			if errors.Is(err, pkg.ErrNoMorePages) {
 				log.Println(err)
 				return nil
@@ -232,48 +233,6 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Re
 	return *detailsRepository, nil
 }
 
-// func GetRepo(ctx context.Context, name, token string) (GithubRepository, error) {
-// 	repo, err := NowGithubRepoCount(name, token)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return GithubRepository{}, err
-// 	}
-
-// 	sem := make(chan bool, 4)
-// 	var eg errgroup.Group
-// 	var lock sync.Mutex
-// 	var stargazers []Stargazer
-// 	for page := 1; page <= lastPage(*repo); page++ {
-// 		sem <- true
-// 		page := page
-// 		eg.Go(func() error {
-// 			defer func() { <-sem }()
-// 			result, err := GetStargazersPage(ctx, *repo, page, token)
-// 			if errors.Is(err, pkg.ErrNoMorePages) {
-// 				log.Println(err)
-// 				return nil
-// 			}
-// 			if err != nil {
-// 				log.Println(err)
-// 				return err
-// 			}
-// 			lock.Lock()
-// 			defer lock.Unlock()
-// 			stargazers = append(stargazers, result...)
-// 			return nil
-// 		})
-// 	}
-
-// 	return *repo, nil
-
-// 	// stargazers = append(stargazers, [{2017-07-07 02:50:15 +0000 UTC}])
-// 	// log.Println(stargazers) //[{2017-07-07 02:50:15 +0000 UTC} {2017-07-07 05:06:33 +0000 UTC} {2017-07-07 10:56:49 +0000 UTC} {2017-07-07 11:25:36 +0000 UTC} {2017-07-07 19:42:38 +0000 UTC} {2017-07-08 01:06:01 +0000 UTC} ]
-
-// 	// 時期によってのカウントの処理
-
-// 	// READMEに書き込む処理
-// }
-
 func lastPage(repo GithubRepository) int {
 	return totalPages(repo) + 1
 }
@@ -283,7 +242,7 @@ func totalPages(repo GithubRepository) int {
 	return repo.StargazersCount / pageSize
 }
 
-func GetStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
+func getStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
 	var stars []Stargazer
 
 	url := baseURL + fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)

@@ -1,4 +1,5 @@
 # Golang ORMapper
+Express information on golang ormapper in a clear manner. It also displays the number of stars at different times of the year.
 
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
