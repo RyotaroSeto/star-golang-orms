@@ -24,10 +24,6 @@ Express information on golang ormapper in a clear manner. It also displays the n
 | [jirfag/go-queryset](https://github.com/jirfag/go-queryset) | 697 | 23 | 71 | 20 | 100% type-safe ORM for Go (Golang) with code generation and MySQL, PostgreSQL, Sqlite3, SQL Server support. GORM under the hood. | 2017-09-03 17:29:30 | 2023-04-24 02:17:47 |
 | [go-rel/rel](https://github.com/go-rel/rel) | 637 | 12 | 55 | 25 | :gem: Modern ORM for Golang - Testable, Extendable and Crafted Into a Clean and Elegant API | 2019-10-06 07:08:01 | 2023-05-23 19:27:28 |
 | [coocood/qbs](https://github.com/coocood/qbs) | 549 | 46 | 101 | 10 | QBS stands for Query By Struct. A Go ORM. | 2013-02-02 05:40:59 | 2023-05-12 03:39:29 |
-| [stephenafamo/bob](https://github.com/stephenafamo/bob) | 310 | 6 | 13 | 4 | SQL query builder and ORM/Factory generator for Go with support for PostgreSQL, MySQL and SQLite | 2022-04-20 23:10:57 | 2023-05-24 13:10:13 |
-| [albrow/zoom](https://github.com/albrow/zoom) | 300 | 20 | 28 | 2 | A blazing-fast datastore and querying engine for Go built on Redis. | 2013-07-17 00:32:34 | 2023-04-28 04:05:03 |
-| [jschaf/pggen](https://github.com/jschaf/pggen) | 221 | 10 | 20 | 16 | Generate type-safe Go for any Postgres query. If Postgres can run the query, pggen can generate code for it. | 2021-01-18 05:55:25 | 2023-05-15 14:22:24 |
-| [Fs02/grimoire](https://github.com/Fs02/grimoire) | 159 | 6 | 18 | 0 | Database access layer for golang | 2018-03-05 16:52:20 | 2023-05-05 18:28:02 |
 ## [gorm](https://github.com/go-gorm/gorm)
 | 2020-11-26 | 2021-05-26 | 2021-11-26 | 2022-05-26 | 2022-11-26 | 2023-05-26 |
 | --- | --- | --- | --- | --- | --- |
