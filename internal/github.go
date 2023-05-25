@@ -22,7 +22,7 @@ const (
 	rateLimit = "rate_limit"
 	header    = `# Golang ORMapper
 
-| Project Name | Stars | Subscribers | Forks | Open Issues | Description | Create Update | Last Update |
+| Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
 
@@ -170,9 +170,9 @@ func generateDateHeaders() []string {
 	now := time.Now()
 	dates := make([]string, 6)
 
-	for i := 0; i < 6; i++ {
+	for i := 0; i < len(dates); i++ {
 		date := now.AddDate(0, -3*i, 0)
-		dates[i] = date.Format(yyyymmddFormat)
+		dates[len(dates)-1-i] = date.Format("20060102")
 	}
 
 	return dates
