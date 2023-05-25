@@ -30,7 +30,7 @@ Express information on golang ormapper in a clear manner. It also displays the n
 	divider = "|\n| --- | --- | --- | --- | --- | --- |\n"
 
 	README                     = "README.md"
-	yyyymmddFormat             = "20060102"
+	yyyymmddFormat             = "2006-01-02"
 	yyyymmddHHmmssHaihunFormat = "2006-01-02 15:04:05"
 )
 
@@ -53,11 +53,11 @@ type GithubRepository struct {
 type ReadmeDetailsRepository struct {
 	RepoName            string
 	RepoURL             string
-	StarCount15MouthAgo int
+	StarCount30MouthAgo int
+	StarCount24MouthAgo int
+	StarCount18MouthAgo int
 	StarCount12MouthAgo int
-	StarCount9MouthAgo  int
 	StarCount6MouthAgo  int
-	StarCount3MouthAgo  int
 	StarCountNow        int
 }
 
@@ -74,20 +74,20 @@ func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
 		if star.StarredAt.Before(time.Now().UTC()) {
 			r.StarCountNow++
 		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -3, 0)) {
-			r.StarCount3MouthAgo++
-		}
 		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -6, 0)) {
 			r.StarCount6MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -9, 0)) {
-			r.StarCount9MouthAgo++
 		}
 		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -12, 0)) {
 			r.StarCount12MouthAgo++
 		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -15, 0)) {
-			r.StarCount15MouthAgo++
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -18, 0)) {
+			r.StarCount18MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -24, 0)) {
+			r.StarCount24MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -30, 0)) {
+			r.StarCount30MouthAgo++
 		}
 	}
 }
@@ -147,11 +147,11 @@ func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
 
 	rowFormat := "| %d | %d | %d | %d | %d | %d |\n"
 	fmt.Fprintf(w, rowFormat,
-		r.StarCount15MouthAgo,
+		r.StarCount30MouthAgo,
+		r.StarCount24MouthAgo,
+		r.StarCount18MouthAgo,
 		r.StarCount12MouthAgo,
-		r.StarCount9MouthAgo,
 		r.StarCount6MouthAgo,
-		r.StarCount3MouthAgo,
 		r.StarCountNow)
 }
 
@@ -172,8 +172,8 @@ func generateDateHeaders() []string {
 	dates := make([]string, 6)
 
 	for i := 0; i < len(dates); i++ {
-		date := now.AddDate(0, -3*i, 0)
-		dates[len(dates)-1-i] = date.Format("20060102")
+		date := now.AddDate(0, -6*i, 0)
+		dates[len(dates)-1-i] = date.Format(yyyymmddFormat)
 	}
 
 	return dates
