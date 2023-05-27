@@ -18,7 +18,7 @@ var TargetRepository = []string{
 	"go-reform/reform",
 	"gobuffalo/pop",
 	"go-jet/jet",
-	// "huandu/go-sqlbuilder",
+	"huandu/go-sqlbuilder",
 	// "jirfag/go-queryset",
 	// "go-rel/rel",
 	// "coocood/qbs",
