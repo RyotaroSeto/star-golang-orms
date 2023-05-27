@@ -39,6 +39,11 @@ type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
 }
 
+type GitHub struct {
+	GithubRepositorys        []GithubRepository
+	ReadmeDetailsRepositorys []ReadmeDetailsRepository
+}
+
 type GithubRepository struct {
 	FullName         string    `json:"full_name"`
 	URL              string    `json:"html_url"`
@@ -93,7 +98,14 @@ func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
 	}
 }
 
-func Edit(repos []GithubRepository, detaiRepos []ReadmeDetailsRepository) error {
+func NewGitHub(gr []GithubRepository, dr []ReadmeDetailsRepository) GitHub {
+	return GitHub{
+		GithubRepositorys:        gr,
+		ReadmeDetailsRepositorys: dr,
+	}
+}
+
+func (gh GitHub) Edit() error {
 	readme, err := os.Create("./" + README)
 	if err != nil {
 		return err
@@ -101,7 +113,7 @@ func Edit(repos []GithubRepository, detaiRepos []ReadmeDetailsRepository) error 
 	defer func() {
 		_ = readme.Close()
 	}()
-	editREADME(readme, repos, detaiRepos)
+	editREADME(readme, gh.GithubRepositorys, gh.ReadmeDetailsRepositorys)
 
 	return nil
 }
@@ -116,18 +128,18 @@ func writeHeader(w io.Writer) {
 	fmt.Fprint(w, header)
 }
 
-func writeRepoRow(w io.Writer, repo GithubRepository) {
+func writeRepositories(w io.Writer, repos []GithubRepository) {
+	for _, repo := range repos {
+		repo.writeRepoRow(w)
+	}
+}
+
+func (repo GithubRepository) writeRepoRow(w io.Writer) {
 	rowFormat := "| [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
 	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
 	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)
 
 	fmt.Fprintf(w, rowFormat, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
-}
-
-func writeRepositories(w io.Writer, repos []GithubRepository) {
-	for _, repo := range repos {
-		writeRepoRow(w, repo)
-	}
 }
 
 func writeDetailRepositories(w io.Writer, detailRepos []ReadmeDetailsRepository) {

@@ -1,6 +1,39 @@
 package pkg
 
-// func Edit(repos []internal.GithubRepository) error {
+// type READMERepository struct {
+// 	OrmCountTable
+// 	OrmDetails
+// }
+
+// type OrmCountTable struct {
+// 	FullName         string    `json:"full_name"`
+// 	URL              string    `json:"html_url"`
+// 	Description      string    `json:"description"`
+// 	StargazersCount  int       `json:"stargazers_count"`
+// 	SubscribersCount int       `json:"subscribers_count"`
+// 	ForksCount       int       `json:"forks_count"`
+// 	OpenIssuesCount  int       `json:"open_issues_count"`
+// 	CreatedAt        time.Time `json:"created_at"`
+// 	UpdatedAt        time.Time `json:"updated_at"`
+// }
+
+// type OrmDetails struct {
+// 	RepoName            string
+// 	RepoURL             string
+// 	StarCount30MouthAgo int
+// 	StarCount24MouthAgo int
+// 	StarCount18MouthAgo int
+// 	StarCount12MouthAgo int
+// 	StarCount6MouthAgo  int
+// 	StarCountNow        int
+// }
+
+// func NewREADMER(repos []internal.GithubRepository, detaiRepos []internal.ReadmeDetailsRepository) READMERepository {
+
+// 	return READMERepository{}
+// }
+
+// func Edit(repos OrmCountTable) error {
 // 	readme, err := os.Create("../README.md")
 // 	if err != nil {
 // 		return err
@@ -8,7 +41,7 @@ package pkg
 // 	defer func() {
 // 		_ = readme.Close()
 // 	}()
-// 	editREADME(readme, repos)
+// 	// editREADME(readme, repos)
 
 // 	return nil
 // }

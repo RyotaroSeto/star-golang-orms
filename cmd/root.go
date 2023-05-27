@@ -21,23 +21,18 @@ func Execute() {
 	// 	go internal.GetRepo(repoNm, config.GithubToken)
 	// }
 
-	repos, detaiRepos, err := ExecGitHubAPI(config.GithubToken)
+	gh, err := ExecGitHubAPI(config.GithubToken)
 	if err != nil {
 		log.Println(err)
 	}
 
-	err = internal.Edit(repos, detaiRepos)
+	err = gh.Edit()
 	if err != nil {
 		log.Println(err)
 	}
-
-	// err = internal.GetRateLimit(config.GithubToken)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
 }
 
-func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.ReadmeDetailsRepository, error) {
+func ExecGitHubAPI(token string) (internal.GitHub, error) {
 	ctx, cancel := NewCtx()
 	defer cancel()
 
@@ -59,7 +54,8 @@ func ExecGitHubAPI(token string) ([]internal.GithubRepository, []internal.Readme
 		detaiRepos = append(detaiRepos, detaiRepo)
 	}
 
-	return repos, detaiRepos, nil
+	gh := internal.NewGitHub(repos, detaiRepos)
+	return gh, nil
 }
 
 func NewCtx() (context.Context, context.CancelFunc) {
@@ -73,9 +69,13 @@ func NewCtx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
+// ディレクトリ構成検討
+
 // リポジトリ作成日より前だったら「-」と出力する
 
 // 取得したリポジトリをスター数順にソート
+
+// 詳細テーブルはリポジトリ作成日からスタートにする
 
 // goroutin を途中キャンセルできるように
 
