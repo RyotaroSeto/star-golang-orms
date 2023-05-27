@@ -1,115 +1,123 @@
 package pkg
 
-// type READMERepository struct {
-// 	OrmCountTable
-// 	OrmDetails
-// }
+import (
+	"fmt"
+	"io"
+	"os"
+	"time"
+)
 
-// type OrmCountTable struct {
-// 	FullName         string    `json:"full_name"`
-// 	URL              string    `json:"html_url"`
-// 	Description      string    `json:"description"`
-// 	StargazersCount  int       `json:"stargazers_count"`
-// 	SubscribersCount int       `json:"subscribers_count"`
-// 	ForksCount       int       `json:"forks_count"`
-// 	OpenIssuesCount  int       `json:"open_issues_count"`
-// 	CreatedAt        time.Time `json:"created_at"`
-// 	UpdatedAt        time.Time `json:"updated_at"`
-// }
+const (
+	header = `# Golang ORMapper Star
+The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
+If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
 
-// type OrmDetails struct {
-// 	RepoName            string
-// 	RepoURL             string
-// 	StarCount30MouthAgo int
-// 	StarCount24MouthAgo int
-// 	StarCount18MouthAgo int
-// 	StarCount12MouthAgo int
-// 	StarCount6MouthAgo  int
-// 	StarCountNow        int
-// }
+| Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
+| ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
+`
 
-// func NewREADMER(repos []internal.GithubRepository, detaiRepos []internal.ReadmeDetailsRepository) READMERepository {
+	divider = "|\n| --- | --- | --- | --- | --- | --- |\n"
 
-// 	return READMERepository{}
-// }
+	README                     = "README.md"
+	yyyymmddFormat             = "2006-01-02"
+	yyyymmddHHmmssHaihunFormat = "2006-01-02 15:04:05"
+)
 
-// func Edit(repos OrmCountTable) error {
-// 	readme, err := os.Create("../README.md")
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer func() {
-// 		_ = readme.Close()
-// 	}()
-// 	// editREADME(readme, repos)
+type GitHub struct {
+	GithubRepositorys        []GithubRepository
+	ReadmeDetailsRepositorys []ReadmeDetailsRepository
+}
 
-// 	return nil
-// }
+func NewGitHub(gr []GithubRepository, dr []ReadmeDetailsRepository) GitHub {
+	return GitHub{
+		GithubRepositorys:        gr,
+		ReadmeDetailsRepositorys: dr,
+	}
+}
 
-// func editREADME(w io.Writer, repos []internal.GithubRepository) {
-// 	fmt.Fprint(w, repos)
-// 	for _, repo := range repos {
-// 		fmt.Fprintf(w, "| [%s](%s) | %s | %d | %d | %d | %d | %d | %v | %v |\n",
-// 			repo.FullName,
-// 			repo.URL,
-// 			repo.Description,
-// 			repo.StargazersCount,
-// 			repo.SubscribersCount,
-// 			repo.ForksCount,
-// 			repo.OpenIssuesCount,
-// 			repo.CreatedAt.Format("2006-01-02 15:04:05"),
-// 			repo.UpdatedAt.Format("2006-01-02 15:04:05"))
-// 	}
-// 	// fmt.Fprintf(w, tail, flextime.Now().Format(time.RFC3339))
-// }
+func (gh GitHub) Edit() error {
+	readme, err := os.Create("./" + README)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = readme.Close()
+	}()
+	editREADME(readme, gh.GithubRepositorys, gh.ReadmeDetailsRepositorys)
 
-// fp, err := os.Open("./bun.txt")
-// if err != nil {
-// 	panic(err)
-// }
-// defer fp.Close()
+	return nil
+}
 
-// data, err := io.ReadAll(fp)
-// if err != nil {
-// 	panic(err)
-// }
+func editREADME(w io.Writer, repos []GithubRepository, detailRepos []ReadmeDetailsRepository) {
+	writeHeader(w)
+	writeRepositories(w, repos)
+	writeDetailRepositories(w, detailRepos)
+}
 
-// starTimes := []string{}
-// tmpStarTimes := strings.Split(string(data), "}")
-// for k, v := range tmpStarTimes {
-// 	if k == 0 || k+1 == len(tmpStarTimes) {
-// 		continue
-// 	}
-// 	v = strings.Replace(v, "{", "", -1)
-// 	result := v[1:]
-// 	starTimes = append(starTimes, result)
-// }
+func writeHeader(w io.Writer) {
+	fmt.Fprint(w, header)
+}
 
-// var starCount202111 int
-// var starCount202204 int
-// var starCount202301 int
-// var starCount202302 int
-// var starCount202303 int
-// for _, val := range starTimes {
-// 	if val < "2021-11-11 00:00:00 +0000 UTC" {
-// 		starCount202111++
-// 	}
-// 	if val < "2022-04-01 00:00:00 +0000 UTC" {
-// 		starCount202204++
-// 	}
-// 	if val < "2023-01-01 00:00:00 +0000 UTC" {
-// 		starCount202301++
-// 	}
-// 	if val < "2023-02-01 00:00:00 +0000 UTC" {
-// 		starCount202302++
-// 	}
-// 	if val < "2023-03-01 00:00:00 +0000 UTC" {
-// 		starCount202303++
-// 	}
-// }
-// fmt.Println(starCount202111)
-// fmt.Println(starCount202204)
-// fmt.Println(starCount202301)
-// fmt.Println(starCount202302)
-// fmt.Println(starCount202303)
-// stargazer := Stargazer{StarredAt: stringToTime("2017-07-07 02:50:15 +0000 UTC")}
+func writeRepositories(w io.Writer, repos []GithubRepository) {
+	for _, repo := range repos {
+		repo.writeRepoRow(w)
+	}
+}
+
+func (repo GithubRepository) writeRepoRow(w io.Writer) {
+	rowFormat := "| [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
+	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
+	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)
+
+	fmt.Fprintf(w, rowFormat, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
+}
+
+func writeDetailRepositories(w io.Writer, detailRepos []ReadmeDetailsRepository) {
+	for _, d := range detailRepos {
+		d.writeDetailRepo(w)
+	}
+}
+
+func (r ReadmeDetailsRepository) writeDetailRepo(w io.Writer) {
+	repoHeader := fmt.Sprintf("## [%s](%s)\n", r.RepoName, r.RepoURL)
+	fmt.Fprint(w, repoHeader)
+
+	r.writeDetailRepoTable(w)
+}
+
+func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
+	fmt.Fprint(w, generateDetailRepoTableHeader())
+
+	rowFormat := "| %d | %d | %d | %d | %d | %d |\n"
+	fmt.Fprintf(w, rowFormat,
+		r.StarCount30MouthAgo,
+		r.StarCount24MouthAgo,
+		r.StarCount18MouthAgo,
+		r.StarCount12MouthAgo,
+		r.StarCount6MouthAgo,
+		r.StarCountNow)
+}
+
+func generateDetailRepoTableHeader() string {
+	detailHeader := ""
+
+	dates := generateDateHeaders()
+	for _, date := range dates {
+		detailHeader += "| " + date + " "
+	}
+	detailHeader += divider
+
+	return detailHeader
+}
+
+func generateDateHeaders() []string {
+	now := time.Now()
+	dates := make([]string, 6)
+
+	for i := 0; i < len(dates); i++ {
+		date := now.AddDate(0, -6*i, 0)
+		dates[len(dates)-1-i] = date.Format(yyyymmddFormat)
+	}
+
+	return dates
+}

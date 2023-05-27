@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 import (
 	"context"
@@ -8,8 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"star-golang-orms/pkg"
 	"strings"
 	"sync"
 	"time"
@@ -20,28 +18,10 @@ import (
 const (
 	baseURL   = "https://api.github.com/"
 	rateLimit = "rate_limit"
-	header    = `# Golang ORMapper Star
-The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
-If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
-
-| Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
-| ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
-`
-
-	divider = "|\n| --- | --- | --- | --- | --- | --- |\n"
-
-	README                     = "README.md"
-	yyyymmddFormat             = "2006-01-02"
-	yyyymmddHHmmssHaihunFormat = "2006-01-02 15:04:05"
 )
 
 type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
-}
-
-type GitHub struct {
-	GithubRepositorys        []GithubRepository
-	ReadmeDetailsRepositorys []ReadmeDetailsRepository
 }
 
 type GithubRepository struct {
@@ -98,103 +78,9 @@ func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
 	}
 }
 
-func NewGitHub(gr []GithubRepository, dr []ReadmeDetailsRepository) GitHub {
-	return GitHub{
-		GithubRepositorys:        gr,
-		ReadmeDetailsRepositorys: dr,
-	}
-}
-
-func (gh GitHub) Edit() error {
-	readme, err := os.Create("./" + README)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = readme.Close()
-	}()
-	editREADME(readme, gh.GithubRepositorys, gh.ReadmeDetailsRepositorys)
-
-	return nil
-}
-
-func editREADME(w io.Writer, repos []GithubRepository, detailRepos []ReadmeDetailsRepository) {
-	writeHeader(w)
-	writeRepositories(w, repos)
-	writeDetailRepositories(w, detailRepos)
-}
-
-func writeHeader(w io.Writer) {
-	fmt.Fprint(w, header)
-}
-
-func writeRepositories(w io.Writer, repos []GithubRepository) {
-	for _, repo := range repos {
-		repo.writeRepoRow(w)
-	}
-}
-
-func (repo GithubRepository) writeRepoRow(w io.Writer) {
-	rowFormat := "| [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
-	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
-	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)
-
-	fmt.Fprintf(w, rowFormat, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
-}
-
-func writeDetailRepositories(w io.Writer, detailRepos []ReadmeDetailsRepository) {
-	for _, d := range detailRepos {
-		d.writeDetailRepo(w)
-	}
-}
-
-func (r ReadmeDetailsRepository) writeDetailRepo(w io.Writer) {
-	repoHeader := fmt.Sprintf("## [%s](%s)\n", r.RepoName, r.RepoURL)
-	fmt.Fprint(w, repoHeader)
-
-	r.writeDetailRepoTable(w)
-}
-
-func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
-	fmt.Fprint(w, generateDetailRepoTableHeader())
-
-	rowFormat := "| %d | %d | %d | %d | %d | %d |\n"
-	fmt.Fprintf(w, rowFormat,
-		r.StarCount30MouthAgo,
-		r.StarCount24MouthAgo,
-		r.StarCount18MouthAgo,
-		r.StarCount12MouthAgo,
-		r.StarCount6MouthAgo,
-		r.StarCountNow)
-}
-
-func generateDetailRepoTableHeader() string {
-	detailHeader := ""
-
-	dates := generateDateHeaders()
-	for _, date := range dates {
-		detailHeader += "| " + date + " "
-	}
-	detailHeader += divider
-
-	return detailHeader
-}
-
-func generateDateHeaders() []string {
-	now := time.Now()
-	dates := make([]string, 6)
-
-	for i := 0; i < len(dates); i++ {
-		date := now.AddDate(0, -6*i, 0)
-		dates[len(dates)-1-i] = date.Format(yyyymmddFormat)
-	}
-
-	return dates
-}
-
 func NowGithubRepoCount(ctx context.Context, name, token string) (GithubRepository, error) {
 	url := baseURL + fmt.Sprintf("repos/%s", name)
-	client := pkg.NewHttpClient(url, http.MethodGet, token)
+	client := NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
 		return GithubRepository{}, err
@@ -227,7 +113,7 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Re
 		eg.Go(func() error {
 			defer func() { <-sem }()
 			result, err := getStargazersPage(ctx, repo, page, token)
-			if errors.Is(err, pkg.ErrNoMorePages) {
+			if errors.Is(err, ErrNoMorePages) {
 				log.Println(err)
 				return nil
 			}
@@ -259,7 +145,7 @@ func getStargazersPage(ctx context.Context, repo GithubRepository, page int, tok
 	var stars []Stargazer
 
 	url := baseURL + fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
-	client := pkg.NewHttpClient(url, http.MethodGet, token)
+	client := NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
 		return nil, err
@@ -292,7 +178,7 @@ type GithubUser struct {
 func GetRepoLogoUrl(repoName string, token string) (string, error) {
 	owner := strings.Split(repoName, "/")[0]
 	url := baseURL + fmt.Sprintf("users/%s", owner)
-	client := pkg.NewHttpClient(url, http.MethodGet, token)
+	client := NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
 		return "", err
@@ -309,7 +195,7 @@ func GetRepoLogoUrl(repoName string, token string) (string, error) {
 
 func GetRateLimit(token string) error {
 	url := baseURL + rateLimit
-	client := pkg.NewHttpClient(url, http.MethodGet, token)
+	client := NewHttpClient(url, http.MethodGet, token)
 	res, err := client.SendRequest()
 	if err != nil {
 		return err
