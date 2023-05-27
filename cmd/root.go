@@ -63,15 +63,3 @@ func NewCtx() (context.Context, context.CancelFunc) {
 
 	return ctx, cancel
 }
-
-// リポジトリ作成日より前だったら「-」と出力する
-
-// 取得したリポジトリをスター数順にソート
-
-// 詳細テーブルはリポジトリ作成日からスタートにする
-
-// goroutin を途中キャンセルできるように
-
-// チャート設計
-
-// チャートをREADMEに書き込む

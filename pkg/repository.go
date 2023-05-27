@@ -2,8 +2,8 @@ package pkg
 
 var TargetRepository = []string{
 	"go-gorm/gorm",
-	"jmoiron/sqlx",
 	"beego/beego",
+	"jmoiron/sqlx",
 	"ent/ent",
 	"kyleconroy/sqlc",
 	"go-xorm/xorm",
