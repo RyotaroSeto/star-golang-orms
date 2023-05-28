@@ -18,12 +18,17 @@ func Execute() {
 
 	gh, err := ExecGitHubAPI(config.GithubToken)
 	if err != nil {
-		log.Println(err)
+		log.Fatal("cannot exec github api", err)
+	}
+
+	err = gh.SortDesByStarCount()
+	if err != nil {
+		log.Fatal("cannot sort star count", err)
 	}
 
 	err = gh.Edit()
 	if err != nil {
-		log.Println(err)
+		log.Fatal("connot edit readme", err)
 	}
 }
 
