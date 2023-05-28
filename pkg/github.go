@@ -39,6 +39,7 @@ type GithubRepository struct {
 type ReadmeDetailsRepository struct {
 	RepoName            string
 	RepoURL             string
+	StarCount36MouthAgo int
 	StarCount30MouthAgo int
 	StarCount24MouthAgo int
 	StarCount18MouthAgo int
@@ -74,6 +75,9 @@ func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
 		}
 		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -30, 0)) {
 			r.StarCount30MouthAgo++
+		}
+		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -36, 0)) {
+			r.StarCount36MouthAgo++
 		}
 	}
 }

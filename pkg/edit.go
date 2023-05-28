@@ -16,7 +16,7 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
 
-	divider = "|\n| --- | --- | --- | --- | --- | --- |\n"
+	divider = "|\n| --- | --- | --- | --- | --- | --- | --- |\n"
 
 	README                     = "README.md"
 	yyyymmddFormat             = "2006-01-02"
@@ -88,8 +88,9 @@ func (r ReadmeDetailsRepository) writeDetailRepo(w io.Writer) {
 func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
 	fmt.Fprint(w, generateDetailRepoTableHeader())
 
-	rowFormat := "| %d | %d | %d | %d | %d | %d |\n"
+	rowFormat := "| %d | %d | %d | %d | %d | %d | %d |\n"
 	fmt.Fprintf(w, rowFormat,
+		r.StarCount36MouthAgo,
 		r.StarCount30MouthAgo,
 		r.StarCount24MouthAgo,
 		r.StarCount18MouthAgo,
@@ -112,7 +113,7 @@ func generateDetailRepoTableHeader() string {
 
 func generateDateHeaders() []string {
 	now := time.Now()
-	dates := make([]string, 6)
+	dates := make([]string, 7)
 
 	for i := 0; i < len(dates); i++ {
 		date := now.AddDate(0, -6*i, 0)
