@@ -40,13 +40,6 @@ type ReadmeDetailsRepository struct {
 	RepoName   string
 	RepoURL    string
 	StarCounts map[string]int
-	// StarCount36MouthAgo int
-	// StarCount30MouthAgo int
-	// StarCount24MouthAgo int
-	// StarCount18MouthAgo int
-	// StarCount12MouthAgo int
-	// StarCount6MouthAgo  int
-	// StarCountNow        int
 }
 
 func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) *ReadmeDetailsRepository {
