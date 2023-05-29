@@ -37,48 +37,60 @@ type GithubRepository struct {
 }
 
 type ReadmeDetailsRepository struct {
-	RepoName            string
-	RepoURL             string
-	StarCount36MouthAgo int
-	StarCount30MouthAgo int
-	StarCount24MouthAgo int
-	StarCount18MouthAgo int
-	StarCount12MouthAgo int
-	StarCount6MouthAgo  int
-	StarCountNow        int
+	RepoName   string
+	RepoURL    string
+	StarCounts map[string]int
+	// StarCount36MouthAgo int
+	// StarCount30MouthAgo int
+	// StarCount24MouthAgo int
+	// StarCount18MouthAgo int
+	// StarCount12MouthAgo int
+	// StarCount6MouthAgo  int
+	// StarCountNow        int
 }
 
-func NewDetailsRepository(repoName, repoURL string, stargazers []Stargazer) *ReadmeDetailsRepository {
-	var r ReadmeDetailsRepository
+func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) *ReadmeDetailsRepository {
+	r := &ReadmeDetailsRepository{
+		RepoName: repo.FullName,
+		RepoURL:  repo.URL,
+		StarCounts: map[string]int{
+			"StarCount36MouthAgo": 0,
+			"StarCount30MouthAgo": 0,
+			"StarCount24MouthAgo": 0,
+			"StarCount18MouthAgo": 0,
+			"StarCount12MouthAgo": 0,
+			"StarCount6MouthAgo":  0,
+			"StarCountNow":        0,
+		},
+	}
 	r.calculateStarCount(stargazers)
-	r.RepoName = strings.Split(repoName, "/")[1]
-	r.RepoURL = repoURL
-	return &r
+	r.RepoName = repo.FullName
+	r.RepoURL = repo.URL
+	return r
 }
 
 func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
 	for _, star := range stargazers {
-		if star.StarredAt.Before(time.Now().UTC()) {
-			r.StarCountNow++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -6, 0)) {
-			r.StarCount6MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -12, 0)) {
-			r.StarCount12MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -18, 0)) {
-			r.StarCount18MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -24, 0)) {
-			r.StarCount24MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -30, 0)) {
-			r.StarCount30MouthAgo++
-		}
-		if star.StarredAt.Before(time.Now().UTC().AddDate(0, -36, 0)) {
-			r.StarCount36MouthAgo++
-		}
+		r.updateStarCount("StarCountNow", star.StarredAt, 0)
+		r.updateStarCount("StarCount6MouthAgo", star.StarredAt, -6)
+		r.updateStarCount("StarCount12MouthAgo", star.StarredAt, -12)
+		r.updateStarCount("StarCount18MouthAgo", star.StarredAt, -18)
+		r.updateStarCount("StarCount24MouthAgo", star.StarredAt, -24)
+		r.updateStarCount("StarCount30MouthAgo", star.StarredAt, -30)
+		r.updateStarCount("StarCount36MouthAgo", star.StarredAt, -36)
+	}
+}
+
+func (r *ReadmeDetailsRepository) updateStarCount(period string, starredAt time.Time, monthsAgo int) {
+	var targetTime time.Time
+	if monthsAgo == 0 {
+		targetTime = time.Now().UTC()
+	} else {
+		targetTime = time.Now().UTC().AddDate(0, monthsAgo, 0)
+	}
+
+	if starredAt.Before(targetTime) {
+		r.StarCounts[period]++
 	}
 }
 
@@ -119,7 +131,7 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Re
 			result, err := getStargazersPage(ctx, repo, page, token)
 			if errors.Is(err, ErrNoMorePages) {
 				log.Println(err)
-				return nil
+				return err
 			}
 			if err != nil {
 				log.Println(err)
@@ -132,7 +144,7 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Re
 		})
 	}
 
-	detailsRepository := NewDetailsRepository(name, repo.URL, stargazers)
+	detailsRepository := NewDetailsRepository(repo, stargazers)
 	return *detailsRepository, nil
 }
 

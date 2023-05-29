@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -21,6 +22,7 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 	README                     = "README.md"
 	yyyymmddFormat             = "2006-01-02"
 	yyyymmddHHmmssHaihunFormat = "2006-01-02 15:04:05"
+	starCountZero              = 0
 )
 
 type GitHub struct {
@@ -88,15 +90,28 @@ func (r ReadmeDetailsRepository) writeDetailRepo(w io.Writer) {
 func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
 	fmt.Fprint(w, generateDetailRepoTableHeader())
 
-	rowFormat := "| %d | %d | %d | %d | %d | %d | %d |\n"
+	rowFormat := "| %s | %s | %s | %s | %s | %s | %s |\n"
+	formattedStarCounts := r.formatStarCounts()
 	fmt.Fprintf(w, rowFormat,
-		r.StarCount36MouthAgo,
-		r.StarCount30MouthAgo,
-		r.StarCount24MouthAgo,
-		r.StarCount18MouthAgo,
-		r.StarCount12MouthAgo,
-		r.StarCount6MouthAgo,
-		r.StarCountNow)
+		formattedStarCounts["StarCount36MouthAgo"],
+		formattedStarCounts["StarCount30MouthAgo"],
+		formattedStarCounts["StarCount24MouthAgo"],
+		formattedStarCounts["StarCount18MouthAgo"],
+		formattedStarCounts["StarCount12MouthAgo"],
+		formattedStarCounts["StarCount6MouthAgo"],
+		formattedStarCounts["StarCountNow"])
+}
+
+func (r ReadmeDetailsRepository) formatStarCounts() map[string]string {
+	formattedCounts := make(map[string]string)
+	for period, count := range r.StarCounts {
+		if count == starCountZero {
+			formattedCounts[period] = "-"
+		} else {
+			formattedCounts[period] = strconv.Itoa(count)
+		}
+	}
+	return formattedCounts
 }
 
 func generateDetailRepoTableHeader() string {

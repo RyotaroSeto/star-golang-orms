@@ -25,7 +25,7 @@ func githubRepositorySort(grs []GithubRepository) error {
 
 func readmeDetailsRepositorySort(rds []ReadmeDetailsRepository) error {
 	sort.Slice(rds, func(i, j int) bool {
-		return rds[i].StarCountNow > rds[j].StarCountNow
+		return rds[i].StarCounts["StarCountNow"] > rds[j].StarCounts["StarCountNow"]
 	})
 	return nil
 }
