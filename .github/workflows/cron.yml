@@ -1,0 +1,34 @@
+name: Update README
+
+on:
+  schedule: # 毎月1日の0時0分に実行
+    - cron: "0 0 1 * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+    runs-on: ubuntu-latest
+    name: update-readme
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.x
+
+      - name: Commit & Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GITHUB_TOKEN=go run main.go
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add -A .
+          git commit -m "update by github action"
+          git push
