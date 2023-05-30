@@ -27,4 +27,9 @@ jobs:
 
       - name: Commit & Push
         run: |
-          echo ${{ env.GITHUB_TOKEN }}
+          GITHUB_TOKEN=${{ env.GITHUB_TOKEN }} go run main.go
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add -A .
+          git commit -m "update by github action"
+          git push
