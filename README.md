@@ -5,8 +5,8 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 | [go-gorm/gorm](https://github.com/go-gorm/gorm) | 32550 | 497 | 3586 | 217 | The fantastic ORM library for Golang, aims to be developer friendly | 2013-10-25 08:31:38 | 2023-05-30 13:50:41 |
-| [beego/beego](https://github.com/beego/beego) | 29780 | 1208 | 5584 | 14 | beego is an open-source, high-performance web framework for the Go programming language. | 2012-02-29 02:32:08 | 2023-05-30 09:19:41 |
-| [jmoiron/sqlx](https://github.com/jmoiron/sqlx) | 13738 | 196 | 1020 | 325 | general purpose extensions to golang's database/sql | 2013-01-28 19:40:00 | 2023-05-30 14:18:28 |
+| []() | 0 | 0 | 0 | 0 |  | 0001-01-01 00:00:00 | 0001-01-01 00:00:00 |
+| []() | 0 | 0 | 0 | 0 |  | 0001-01-01 00:00:00 | 0001-01-01 00:00:00 |
 | []() | 0 | 0 | 0 | 0 |  | 0001-01-01 00:00:00 | 0001-01-01 00:00:00 |
 | []() | 0 | 0 | 0 | 0 |  | 0001-01-01 00:00:00 | 0001-01-01 00:00:00 |
 | []() | 0 | 0 | 0 | 0 |  | 0001-01-01 00:00:00 | 0001-01-01 00:00:00 |
@@ -25,15 +25,15 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 ## [go-gorm/gorm](https://github.com/go-gorm/gorm)
 | 2020-05-30 | 2020-11-30 | 2021-05-30 | 2021-11-30 | 2022-05-30 | 2022-11-30 | 2023-05-30 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 17851 | 21082 | 23325 | 25439 | 27867 | 30384 | 32200 |
-## [beego/beego](https://github.com/beego/beego)
+| 17851 | 21082 | 23325 | 25440 | 26800 | 26800 | 26800 |
+## []()
 | 2020-05-30 | 2020-11-30 | 2021-05-30 | 2021-11-30 | 2022-05-30 | 2022-11-30 | 2023-05-30 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 22929 | 24456 | 25645 | 26692 | 27784 | 28921 | 29400 |
-## [jmoiron/sqlx](https://github.com/jmoiron/sqlx)
+| - | - | - | - | - | - | - |
+## []()
 | 2020-05-30 | 2020-11-30 | 2021-05-30 | 2021-11-30 | 2022-05-30 | 2022-11-30 | 2023-05-30 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8097 | 9038 | 9992 | 10500 | 10500 | 10500 | 10500 |
+| - | - | - | - | - | - | - |
 ## []()
 | 2020-05-30 | 2020-11-30 | 2021-05-30 | 2021-11-30 | 2022-05-30 | 2022-11-30 | 2023-05-30 |
 | --- | --- | --- | --- | --- | --- | --- |
