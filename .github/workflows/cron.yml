@@ -5,6 +5,9 @@ on:
     - cron: "0 0 1 * *"
   workflow_dispatch:
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     permissions:
@@ -23,12 +26,5 @@ jobs:
           go-version: 1.x
 
       - name: Commit & Push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          GITHUB_TOKEN=env.GITHUB_TOKEN go run main.go
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add -A .
-          git commit -m "update by github action"
-          git push
+          echo ${{ env.GITHUB_TOKEN }}
