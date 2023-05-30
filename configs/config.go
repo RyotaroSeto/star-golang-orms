@@ -9,11 +9,12 @@ type Config struct {
 }
 
 func LoadConfig(path string) (config Config, err error) {
-	viper.AutomaticEnv()
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
+	// viper.AutomaticEnv()
+	viper.BindEnv("GithubToken")
 	err = viper.ReadInConfig()
 	if err != nil {
 		return
