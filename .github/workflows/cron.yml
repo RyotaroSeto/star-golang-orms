@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  GITHUB_TOKEN: "tesstest"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
