@@ -122,7 +122,6 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Re
 		eg.Go(func() error {
 			defer func() { <-sem }()
 			result, err := getStargazersPage(ctx, repo, page, token)
-			time.Sleep(100 * time.Millisecond)
 			if errors.Is(err, ErrNoMorePages) {
 				log.Println(err)
 				return err
