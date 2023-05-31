@@ -13,8 +13,8 @@ const (
 The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
 If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
 
-| Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
-| ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
+| No. | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
+| --- | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
 
 	divider = "|\n| --- | --- | --- | --- | --- | --- | --- |\n"
@@ -61,17 +61,19 @@ func writeHeader(w io.Writer) {
 }
 
 func writeRepositories(w io.Writer, repos []GithubRepository) {
+	repoNo := 1
 	for _, repo := range repos {
-		repo.writeRepoRow(w)
+		repo.writeRepoRow(w, repoNo)
+		repoNo++
 	}
 }
 
-func (repo GithubRepository) writeRepoRow(w io.Writer) {
-	rowFormat := "| [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
+func (repo GithubRepository) writeRepoRow(w io.Writer, repoNo int) {
+	rowFormat := "| %d | [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
 	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
 	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)
 
-	fmt.Fprintf(w, rowFormat, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
+	fmt.Fprintf(w, rowFormat, repoNo, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
 }
 
 func writeDetailRepositories(w io.Writer, detailRepos []ReadmeDetailsRepository) {
