@@ -42,7 +42,7 @@ type ReadmeDetailsRepository struct {
 	StarCounts map[string]int
 }
 
-func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) *ReadmeDetailsRepository {
+func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) ReadmeDetailsRepository {
 	r := &ReadmeDetailsRepository{
 		RepoName: repo.FullName,
 		RepoURL:  repo.URL,
@@ -59,7 +59,7 @@ func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) *Readme
 	r.calculateStarCount(stargazers)
 	r.RepoName = repo.FullName
 	r.RepoURL = repo.URL
-	return r
+	return *r
 }
 
 func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
@@ -111,34 +111,37 @@ func NowGithubRepoCount(ctx context.Context, name, token string) (GithubReposito
 	return repo, nil
 }
 
-func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (ReadmeDetailsRepository, error) {
+func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (GithubRepository, []Stargazer) {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
 	var stargazers []Stargazer
 	for page := 1; page <= lastPage(repo); page++ {
 		sem <- true
-		page := page
-		eg.Go(func() error {
-			defer func() { <-sem }()
-			result, err := getStargazersPage(ctx, repo, page, token)
-			if errors.Is(err, ErrNoMorePages) {
-				log.Println(err)
-				return err
-			}
-			if err != nil {
-				log.Println(err)
-				return err
-			}
-			lock.Lock()
-			defer lock.Unlock()
-			stargazers = append(stargazers, result...)
-			return nil
-		})
+		func(i int) {
+			eg.Go(func() error {
+				defer func() { <-sem }()
+				result, err := getStargazersPage(ctx, repo, page, token)
+				if errors.Is(err, ErrNoMorePages) {
+					log.Println(err)
+					return err
+				}
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+				lock.Lock()
+				defer lock.Unlock()
+				stargazers = append(stargazers, result...)
+				return nil
+			})
+		}(page)
+		if err := eg.Wait(); err != nil {
+			fmt.Println(err)
+		}
 	}
 
-	detailsRepository := NewDetailsRepository(repo, stargazers)
-	return *detailsRepository, nil
+	return repo, stargazers
 }
 
 func lastPage(repo GithubRepository) int {

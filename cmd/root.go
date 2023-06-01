@@ -46,12 +46,8 @@ func ExecGitHubAPI(token string) (pkg.GitHub, error) {
 			break
 		}
 		repos = append(repos, repo)
-		detaiRepo, err := pkg.GetRepo(ctx, repoNm, token, repo)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		detaiRepos = append(detaiRepos, detaiRepo)
+		repo, stargazers := pkg.GetRepo(ctx, repoNm, token, repo)
+		detaiRepos = append(detaiRepos, pkg.NewDetailsRepository(repo, stargazers))
 	}
 
 	gh := pkg.NewGitHub(repos, detaiRepos)
