@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"star-golang-orms/configs"
 	"star-golang-orms/pkg"
+	"sync"
 	"syscall"
 )
 
@@ -38,18 +40,31 @@ func ExecGitHubAPI(token string) (pkg.GitHub, error) {
 
 	var repos []pkg.GithubRepository
 	var detaiRepos []pkg.ReadmeDetailsRepository
+
+	// TODO ch,selectでエラー検知
+	wg := new(sync.WaitGroup)
+	var lock sync.Mutex
 	for _, repoNm := range pkg.TargetRepository {
-		log.Println("start:" + repoNm)
-		repo, err := pkg.NowGithubRepoCount(ctx, repoNm, token)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		repos = append(repos, repo)
-		repo, stargazers := pkg.GetRepo(ctx, repoNm, token, repo)
-		detaiRepos = append(detaiRepos, pkg.NewDetailsRepository(repo, stargazers))
+		wg.Add(1)
+		fmt.Println("start:" + repoNm)
+		go func(repoNm string) {
+			defer wg.Done()
+			repo, err := pkg.NowGithubRepoCount(ctx, repoNm, token)
+			if err != nil {
+				log.Println(err)
+				// break
+			}
+			repos = append(repos, repo)
+			fmt.Println(repoNm + " Start")
+			repo, stargazers := pkg.GetRepo(ctx, repoNm, token, repo)
+			fmt.Println(repoNm + " DONE")
+			lock.Lock()
+			defer lock.Unlock()
+			detaiRepos = append(detaiRepos, pkg.NewDetailsRepository(repo, stargazers))
+		}(repoNm)
 	}
 
+	wg.Wait()
 	gh := pkg.NewGitHub(repos, detaiRepos)
 	return gh, nil
 }
