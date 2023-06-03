@@ -1,0 +1,17 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:base"],
+    "schedule": ["every weekend"],
+    "baseBranches": ["main"],
+    "timezone": "Asia/Tokyo",
+    "packageRules": [
+      {
+        "groupName": "golang packages",
+        "matchManagers": ["gomod"]
+      },
+      {
+        "groupName": "github-actions versions",
+        "matchManagers": ["github-actions"]
+      },
+    ]
+}
