@@ -16,21 +16,31 @@ func Execute() {
 	config, err := configs.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config", err)
+		return
 	}
 
 	gh, err := ExecGitHubAPI(config.GithubToken)
 	if err != nil {
 		log.Fatal("cannot exec github api", err)
+		return
 	}
 
 	err = gh.SortDesByStarCount()
 	if err != nil {
 		log.Fatal("cannot sort star count", err)
+		return
+	}
+
+	err = gh.MakeChart()
+	if err != nil {
+		log.Fatal("connot make chart", err)
+		return
 	}
 
 	err = gh.Edit()
 	if err != nil {
 		log.Fatal("connot edit readme", err)
+		return
 	}
 }
 

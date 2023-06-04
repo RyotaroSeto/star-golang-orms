@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	header = `# Golang ORMapper Star
+	header = `# Golang ORMapper Star 🎉🎉
 The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
 If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
+`
 
-| No. | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
+	repoTable = `| No. | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | --- | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
 
@@ -52,12 +53,22 @@ func (gh GitHub) Edit() error {
 
 func editREADME(w io.Writer, repos []GithubRepository, detailRepos []ReadmeDetailsRepository) {
 	writeHeader(w)
+	writeChartJPEG(w)
+	writeRepoTbl(w)
 	writeRepositories(w, repos)
 	writeDetailRepositories(w, detailRepos)
 }
 
 func writeHeader(w io.Writer) {
 	fmt.Fprint(w, header)
+}
+
+func writeChartJPEG(w io.Writer) {
+	fmt.Fprintf(w, "![Start数チャート](%s)\n", jpegFilePath)
+}
+
+func writeRepoTbl(w io.Writer) {
+	fmt.Fprint(w, repoTable)
 }
 
 func writeRepositories(w io.Writer, repos []GithubRepository) {
@@ -119,7 +130,7 @@ func (r ReadmeDetailsRepository) formatStarCounts() map[string]string {
 func generateDetailRepoTableHeader() string {
 	detailHeader := ""
 
-	dates := generateDateHeaders()
+	dates := generateDates()
 	for _, date := range dates {
 		detailHeader += "| " + date + " "
 	}
@@ -128,7 +139,7 @@ func generateDetailRepoTableHeader() string {
 	return detailHeader
 }
 
-func generateDateHeaders() []string {
+func generateDates() []string {
 	now := time.Now()
 	dates := make([]string, 7)
 
