@@ -41,7 +41,6 @@ func ExecGitHubAPI(token string) (pkg.GitHub, error) {
 	var repos []pkg.GithubRepository
 	var detaiRepos []pkg.ReadmeDetailsRepository
 
-	// TODO ch,selectでエラー検知
 	wg := new(sync.WaitGroup)
 	var lock sync.Mutex
 	for _, repoNm := range pkg.TargetRepository {
@@ -52,7 +51,7 @@ func ExecGitHubAPI(token string) (pkg.GitHub, error) {
 			repo, err := pkg.NowGithubRepoCount(ctx, repoNm, token)
 			if err != nil {
 				log.Println(err)
-				// break
+				return
 			}
 			repos = append(repos, repo)
 			fmt.Println(repoNm + " Start")
