@@ -5,19 +5,27 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-
 jobs:
-  publish-gh-pages:
-    runs-on:
-      - ubuntu-latest
-
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Push gh-pages branch
-        uses: peaceiris/actions-gh-pages@v3
+      - uses: actions/upload-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./output
-          user_name: github-actions
-          user_email: github-actions@github.com
+          name: star-golang-orms
+          path: output
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: output
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/deploy-pages@v1
+        id: deployment
