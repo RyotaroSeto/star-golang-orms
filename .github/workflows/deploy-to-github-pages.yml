@@ -6,29 +6,30 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/upload-artifact@v3
-        with:
-          name: my_site
-          path: data
-      - uses: actions/upload-pages-artifact@v1
-        with:
-          path: data
-
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/deploy-pages@v1
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: 'output'
+      - name: Deploy to GitHub Pages
         id: deployment
+        uses: actions/deploy-pages@main
