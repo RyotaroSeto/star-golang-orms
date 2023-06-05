@@ -42,6 +42,36 @@ type ReadmeDetailsRepository struct {
 	StarCounts map[string]int
 }
 
+func ExecGitHubAPI(ctx context.Context, token string) (GitHub, error) {
+	var repos []GithubRepository
+	var detaiRepos []ReadmeDetailsRepository
+
+	wg := new(sync.WaitGroup)
+	var lock sync.Mutex
+	for _, repoNm := range TargetRepository {
+		wg.Add(1)
+		go func(repoNm string) {
+			defer wg.Done()
+			repo, err := NowGithubRepoCount(ctx, repoNm, token)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			repos = append(repos, repo)
+			log.Println(repoNm + " Start")
+			repo, stargazers := GetRepo(ctx, repoNm, token, repo)
+			log.Println(repoNm + " DONE")
+			lock.Lock()
+			defer lock.Unlock()
+			detaiRepos = append(detaiRepos, NewDetailsRepository(repo, stargazers))
+		}(repoNm)
+	}
+
+	wg.Wait()
+	gh := NewGitHub(repos, detaiRepos)
+	return gh, nil
+}
+
 func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) ReadmeDetailsRepository {
 	r := &ReadmeDetailsRepository{
 		RepoName: repo.FullName,
