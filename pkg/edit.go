@@ -65,7 +65,7 @@ func writeHeader(w io.Writer) {
 }
 
 func writeChartJPEG(w io.Writer) {
-	fmt.Fprintf(w, "[![Start数チャート](%s)](%s){:target='_blank'}\n", jpegFilePath, deployURL)
+	fmt.Fprintf(w, "[![Start数チャート](%s)](%s)\n", jpegFilePath, deployURL)
 }
 
 func writeRepoTbl(w io.Writer) {
