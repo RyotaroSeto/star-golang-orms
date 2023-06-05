@@ -59,7 +59,7 @@ func ExecGitHubAPI(ctx context.Context, token string) (GitHub, error) {
 			}
 			repos = append(repos, repo)
 			log.Println(repoNm + " Start")
-			repo, stargazers := GetRepo(ctx, repoNm, token, repo)
+			stargazers := getStargazersCountByRepo(ctx, repoNm, token, repo)
 			log.Println(repoNm + " DONE")
 			lock.Lock()
 			defer lock.Unlock()
@@ -141,7 +141,7 @@ func NowGithubRepoCount(ctx context.Context, name, token string) (GithubReposito
 	return repo, nil
 }
 
-func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (GithubRepository, []Stargazer) {
+func getStargazersCountByRepo(ctx context.Context, name, token string, repo GithubRepository) []Stargazer {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
@@ -153,11 +153,9 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Gi
 				defer func() { <-sem }()
 				result, err := getStargazersPage(ctx, repo, page, token)
 				if errors.Is(err, ErrNoMorePages) {
-					log.Println(err)
 					return err
 				}
 				if err != nil {
-					log.Println(err)
 					return err
 				}
 				lock.Lock()
@@ -167,11 +165,11 @@ func GetRepo(ctx context.Context, name, token string, repo GithubRepository) (Gi
 			})
 		}(page)
 		if err := eg.Wait(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}
 
-	return repo, stargazers
+	return stargazers
 }
 
 func lastPage(repo GithubRepository) int {
