@@ -24,6 +24,7 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 	yyyymmddFormat             = "2006-01-02"
 	yyyymmddHHmmssHaihunFormat = "2006-01-02 15:04:05"
 	starCountZero              = 0
+	deployURL                  = "https://ryotaroseto.github.io/star-golang-orms/output/orm_chart.html"
 )
 
 type GitHub struct {
@@ -64,7 +65,7 @@ func writeHeader(w io.Writer) {
 }
 
 func writeChartJPEG(w io.Writer) {
-	fmt.Fprintf(w, "![Start数チャート](%s)\n", jpegFilePath)
+	fmt.Fprintf(w, "[![Start数チャート](%s)](%s){:target='_blank'}\n", jpegFilePath, deployURL)
 }
 
 func writeRepoTbl(w io.Writer) {
