@@ -5,17 +5,20 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/upload-artifact@v3
         with:
-          name: star-golang-orms
-          path: output
+          name: my_site
+          path: data
       - uses: actions/upload-pages-artifact@v1
         with:
-          path: output
+          path: data
 
   deploy:
     needs: build
