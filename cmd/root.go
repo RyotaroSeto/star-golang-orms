@@ -34,13 +34,13 @@ func Execute() {
 
 	err = gh.MakeChart()
 	if err != nil {
-		log.Fatal("connot make chart", err)
+		log.Fatal("cannot make chart", err)
 		return
 	}
 
 	err = gh.Edit()
 	if err != nil {
-		log.Fatal("connot edit readme", err)
+		log.Fatal("cannot edit readme", err)
 		return
 	}
 }
