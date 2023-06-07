@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +17,58 @@ func TestGitHub_SortDesByStarCount(t *testing.T) {
 		fields    fields
 		assertion assert.ErrorAssertionFunc
 	}{
-		// TODO: Add test cases.
+		{
+			name: "正常系",
+			fields: fields{
+				GithubRepositorys: []GithubRepository{
+					{
+						FullName:         "test",
+						URL:              "test",
+						Description:      "test",
+						StargazersCount:  1,
+						SubscribersCount: 1,
+						ForksCount:       1,
+						OpenIssuesCount:  1,
+						CreatedAt:        time.Now(),
+						UpdatedAt:        time.Now(),
+					},
+				},
+				ReadmeDetailsRepositorys: []ReadmeDetailsRepository{
+					{
+						RepoName:   "test",
+						RepoURL:    "test",
+						StarCounts: map[string]int{"2020-01-01": 1},
+					},
+				},
+			},
+			assertion: assert.NoError,
+		},
+		{
+			name: "異常系",
+			fields: fields{
+				GithubRepositorys: []GithubRepository{
+					{
+						FullName:         "test",
+						URL:              "test",
+						Description:      "test",
+						StargazersCount:  1,
+						SubscribersCount: 1,
+						ForksCount:       1,
+						OpenIssuesCount:  1,
+						CreatedAt:        time.Now(),
+						UpdatedAt:        time.Now(),
+					},
+				},
+				ReadmeDetailsRepositorys: []ReadmeDetailsRepository{
+					{
+						RepoName:   "test",
+						RepoURL:    "test",
+						StarCounts: map[string]int{"2020-01-01": 1},
+					},
+				},
+			},
+			assertion: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -38,7 +90,44 @@ func Test_githubRepositorySort(t *testing.T) {
 		args      args
 		assertion assert.ErrorAssertionFunc
 	}{
-		// TODO: Add test cases.
+		{
+			name: "正常系",
+			args: args{
+				grs: []GithubRepository{
+					{
+						FullName:         "test",
+						URL:              "test",
+						Description:      "test",
+						StargazersCount:  1,
+						SubscribersCount: 1,
+						ForksCount:       1,
+						OpenIssuesCount:  1,
+						CreatedAt:        time.Now(),
+						UpdatedAt:        time.Now(),
+					},
+				},
+			},
+			assertion: assert.NoError,
+		},
+		{
+			name: "異常系",
+			args: args{
+				grs: []GithubRepository{
+					{
+						FullName:         "test",
+						URL:              "test",
+						Description:      "test",
+						StargazersCount:  1,
+						SubscribersCount: 1,
+						ForksCount:       1,
+						OpenIssuesCount:  1,
+						CreatedAt:        time.Now(),
+						UpdatedAt:        time.Now(),
+					},
+				},
+			},
+			assertion: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
