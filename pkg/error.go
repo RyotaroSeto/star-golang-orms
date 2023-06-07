@@ -5,20 +5,9 @@ import (
 )
 
 var (
-	ErrNoMorePages  = errors.New("no more pages to get")
-	ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
+	ErrNoMorePages = errors.New("no more pages to get")
+	ErrNoStars     = errors.New("no stars present")
+	ErrOtherReason = errors.New("other reason is error")
+	ErrRateLimit   = errors.New("this error is rate limit")
+	ErrNotFound    = errors.New("this error is not found")
 )
-
-func ValidateStatusCode(statusCode int) error {
-	switch statusCode {
-	case 304:
-		return errors.Errorf("failed to not modified: %s", statusCode)
-	case 401:
-		return errors.Errorf("failed to requires authentication: %s", statusCode)
-	case 403:
-		return errors.Errorf("failed to forbidden: %s", statusCode)
-	case 422:
-		return errors.Errorf("failed to endpoint has been spammed: %s", statusCode)
-	}
-	return nil
-}

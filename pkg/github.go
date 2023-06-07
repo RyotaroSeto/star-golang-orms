@@ -203,11 +203,11 @@ func getStargazersPage(ctx context.Context, repo GithubRepository, page int, tok
 			return nil, err
 		}
 		if len(stars) == 0 {
-			return nil, fmt.Errorf("スターなし")
+			return nil, ErrNoStars
 		}
 		return stars, nil
 	default:
-		return nil, fmt.Errorf("その他のエラー")
+		return nil, ErrOtherReason
 	}
 }
 
@@ -256,10 +256,10 @@ func GetRateLimit(token string) error {
 		fmt.Println(r)
 		return nil
 	case http.StatusNotModified:
-		return fmt.Errorf("rate limit")
+		return ErrRateLimit
 	case http.StatusNotFound:
-		return fmt.Errorf("not Found")
+		return ErrNotFound
 	default:
-		return fmt.Errorf("その他のエラー")
+		return ErrOtherReason
 	}
 }
