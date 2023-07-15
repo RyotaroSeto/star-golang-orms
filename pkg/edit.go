@@ -107,12 +107,12 @@ func (r ReadmeDetailsRepository) writeDetailRepoTable(w io.Writer) {
 	rowFormat := "| %s | %s | %s | %s | %s | %s | %s |\n"
 	formattedStarCounts := r.formatStarCounts()
 	fmt.Fprintf(w, rowFormat,
+		formattedStarCounts["StarCount72MouthAgo"],
+		formattedStarCounts["StarCount60MouthAgo"],
+		formattedStarCounts["StarCount48MouthAgo"],
 		formattedStarCounts["StarCount36MouthAgo"],
-		formattedStarCounts["StarCount30MouthAgo"],
 		formattedStarCounts["StarCount24MouthAgo"],
-		formattedStarCounts["StarCount18MouthAgo"],
 		formattedStarCounts["StarCount12MouthAgo"],
-		formattedStarCounts["StarCount6MouthAgo"],
 		formattedStarCounts["StarCountNow"])
 }
 

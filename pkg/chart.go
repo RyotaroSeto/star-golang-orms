@@ -63,12 +63,12 @@ func (d ReadmeDetailsRepository) makeLine(line *charts.Line, dates []string) *ch
 func (d ReadmeDetailsRepository) generateStarHistorys() []opts.LineData {
 	starHistorys := make([]opts.LineData, 0)
 
+	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount72MouthAgo"]})
+	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount60MouthAgo"]})
+	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount48MouthAgo"]})
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount36MouthAgo"]})
-	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount30MouthAgo"]})
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount24MouthAgo"]})
-	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount18MouthAgo"]})
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount12MouthAgo"]})
-	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount6MouthAgo"]})
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCountNow"]})
 
 	return starHistorys

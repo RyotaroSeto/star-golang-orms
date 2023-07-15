@@ -77,12 +77,12 @@ func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) ReadmeD
 		RepoName: repo.FullName,
 		RepoURL:  repo.URL,
 		StarCounts: map[string]int{
+			"StarCount72MouthAgo": 0,
+			"StarCount60MouthAgo": 0,
+			"StarCount48MouthAgo": 0,
 			"StarCount36MouthAgo": 0,
-			"StarCount30MouthAgo": 0,
 			"StarCount24MouthAgo": 0,
-			"StarCount18MouthAgo": 0,
 			"StarCount12MouthAgo": 0,
-			"StarCount6MouthAgo":  0,
 			"StarCountNow":        0,
 		},
 	}
@@ -95,12 +95,12 @@ func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) ReadmeD
 func (r *ReadmeDetailsRepository) calculateStarCount(stargazers []Stargazer) {
 	for _, star := range stargazers {
 		r.updateStarCount("StarCountNow", star.StarredAt, 0)
-		r.updateStarCount("StarCount6MouthAgo", star.StarredAt, -6)
 		r.updateStarCount("StarCount12MouthAgo", star.StarredAt, -12)
-		r.updateStarCount("StarCount18MouthAgo", star.StarredAt, -18)
 		r.updateStarCount("StarCount24MouthAgo", star.StarredAt, -24)
-		r.updateStarCount("StarCount30MouthAgo", star.StarredAt, -30)
 		r.updateStarCount("StarCount36MouthAgo", star.StarredAt, -36)
+		r.updateStarCount("StarCount48MouthAgo", star.StarredAt, -48)
+		r.updateStarCount("StarCount60MouthAgo", star.StarredAt, -60)
+		r.updateStarCount("StarCount72MouthAgo", star.StarredAt, -72)
 	}
 }
 
