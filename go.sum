@@ -67,6 +67,8 @@ github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/go-echarts/go-echarts/v2 v2.2.6 h1:Gg4SXDxFwi/KzRvBuH6ed89b6bqP4F7ysANDdWiziBY=
 github.com/go-echarts/go-echarts/v2 v2.2.6/go.mod h1:IN5P8jIRZKENmAJf2lHXBzv8U9YwdVnY9urdzGkEDA0=
+github.com/go-echarts/go-echarts/v2 v2.2.7 h1:mtFAuoqQ7McdlKrJ0gLexwxMPT7yoscDDhULNwPOxBk=
+github.com/go-echarts/go-echarts/v2 v2.2.7/go.mod h1:VEeyPT5Odx/UHeuxtIAHGu2+87MWGA5OBaZ120NFi/w=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
