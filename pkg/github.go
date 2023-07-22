@@ -3,7 +3,6 @@ package pkg
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -59,7 +59,7 @@ func ExecGitHubAPI(ctx context.Context, token string) (GitHub, error) {
 			}
 			repos = append(repos, repo)
 			log.Println(repoNm + " Start")
-			stargazers := getStargazersCountByRepo(ctx, repoNm, token, repo)
+			stargazers := getStargazersCountByRepo(ctx, token, repo)
 			log.Println(repoNm + " DONE")
 			lock.Lock()
 			defer lock.Unlock()
@@ -141,32 +141,31 @@ func NowGithubRepoCount(ctx context.Context, name, token string) (GithubReposito
 	return repo, nil
 }
 
-func getStargazersCountByRepo(ctx context.Context, name, token string, repo GithubRepository) []Stargazer {
+func getStargazersCountByRepo(ctx context.Context, token string, repo GithubRepository) []Stargazer {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
 	var stargazers []Stargazer
 	for page := 1; page <= lastPage(repo); page++ {
 		sem <- true
-		func(i int) {
-			eg.Go(func() error {
-				defer func() { <-sem }()
-				result, err := getStargazersPage(ctx, repo, page, token)
-				if errors.Is(err, ErrNoMorePages) {
-					return err
-				}
-				if err != nil {
-					return err
-				}
-				lock.Lock()
-				defer lock.Unlock()
-				stargazers = append(stargazers, result...)
+		page := page
+		eg.Go(func() error {
+			defer func() { <-sem }()
+			result, err := getStargazersPage(ctx, repo, page, token)
+			if errors.Is(err, ErrNoMorePages) {
 				return nil
-			})
-		}(page)
-		if err := eg.Wait(); err != nil {
-			log.Println(err)
-		}
+			}
+			if err != nil {
+				return err
+			}
+			lock.Lock()
+			defer lock.Unlock()
+			stargazers = append(stargazers, result...)
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		log.Println(err)
 	}
 
 	return stargazers
@@ -177,8 +176,7 @@ func lastPage(repo GithubRepository) int {
 }
 
 func totalPages(repo GithubRepository) int {
-	pageSize := 100
-	return repo.StargazersCount / pageSize
+	return repo.StargazersCount / 100
 }
 
 func getStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
