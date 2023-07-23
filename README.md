@@ -4,11 +4,11 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 [![Start数チャート](output/orm_chart.jpeg)](https://ryotaroseto.github.io/star-golang-orms/output/orm_chart.html)
 | No. | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | --- | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
-| 1 | [go-gorm/gorm](https://github.com/go-gorm/gorm) | 33069 | 495 | 3641 | 223 | The fantastic ORM library for Golang, aims to be developer friendly | 2013-10-25 08:31:38 | 2023-07-23 10:14:44 |
+| 1 | [go-gorm/gorm](https://github.com/go-gorm/gorm) | 33069 | 495 | 3641 | 224 | The fantastic ORM library for Golang, aims to be developer friendly | 2013-10-25 08:31:38 | 2023-07-23 10:14:44 |
 | 2 | [beego/beego](https://github.com/beego/beego) | 30002 | 1208 | 5603 | 12 | beego is an open-source, high-performance web framework for the Go programming language. | 2012-02-29 02:32:08 | 2023-07-23 10:11:22 |
 | 3 | [jmoiron/sqlx](https://github.com/jmoiron/sqlx) | 13950 | 197 | 1031 | 328 | general purpose extensions to golang's database/sql | 2013-01-28 19:40:00 | 2023-07-23 06:32:27 |
-| 4 | [ent/ent](https://github.com/ent/ent) | 13798 | 148 | 827 | 326 | An entity framework for Go | 2019-06-12 22:53:55 | 2023-07-23 13:27:11 |
-| 5 | [kyleconroy/sqlc](https://github.com/kyleconroy/sqlc) | 8591 | 70 | 583 | 377 | Generate type-safe code from SQL | 2019-06-21 21:11:35 | 2023-07-23 13:50:34 |
+| 4 | [ent/ent](https://github.com/ent/ent) | 13799 | 148 | 827 | 326 | An entity framework for Go | 2019-06-12 22:53:55 | 2023-07-23 14:06:15 |
+| 5 | [kyleconroy/sqlc](https://github.com/kyleconroy/sqlc) | 8592 | 70 | 583 | 377 | Generate type-safe code from SQL | 2019-06-21 21:11:35 | 2023-07-23 14:08:11 |
 | 6 | [go-xorm/xorm](https://github.com/go-xorm/xorm) | 6637 | 266 | 772 | 307 | Simple and Powerful ORM for Go, support mysql,postgres,tidb,sqlite3,mssql,oracle, Moved to https://gitea.com/xorm/xorm | 2013-05-09 02:35:04 | 2023-07-20 16:07:48 |
 | 7 | [volatiletech/sqlboiler](https://github.com/volatiletech/sqlboiler) | 5906 | 74 | 512 | 85 | Generate a Go ORM tailored to your database schema. | 2016-02-21 06:18:25 | 2023-07-22 23:19:13 |
 | 8 | [go-pg/pg](https://github.com/go-pg/pg) | 5437 | 90 | 397 | 115 | Golang ORM with focus on PostgreSQL features and performance | 2013-04-24 12:31:41 | 2023-07-21 01:40:08 |
@@ -25,11 +25,11 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 ## [go-gorm/gorm](https://github.com/go-gorm/gorm)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 5663 | 8994 | 13671 | 18734 | 23897 | 28642 | 33069 |
+| 5663 | 8994 | 13673 | 18735 | 23897 | 28643 | 33069 |
 ## [beego/beego](https://github.com/beego/beego)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10468 | 14843 | 19941 | 23451 | 25921 | 28058 | 30002 |
+| 10469 | 14844 | 19941 | 23451 | 25921 | 28058 | 30002 |
 ## [jmoiron/sqlx](https://github.com/jmoiron/sqlx)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -37,11 +37,11 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 ## [ent/ent](https://github.com/ent/ent)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
-| - | - | - | 2777 | 7426 | 11037 | 13798 |
+| - | - | - | 2777 | 7426 | 11037 | 13799 |
 ## [kyleconroy/sqlc](https://github.com/kyleconroy/sqlc)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
-| - | - | 17 | 1965 | 3183 | 5860 | 8591 |
+| - | - | 17 | 1965 | 3184 | 5860 | 8592 |
 ## [go-xorm/xorm](https://github.com/go-xorm/xorm)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -89,7 +89,7 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 ## [go-jet/jet](https://github.com/go-jet/jet)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
-| - | - | - | 280 | 421 | 747 | 1346 |
+| - | - | - | 280 | 421 | 748 | 1346 |
 ## [huandu/go-sqlbuilder](https://github.com/huandu/go-sqlbuilder)
 | 2020-07-23 | 2021-01-23 | 2021-07-23 | 2022-01-23 | 2022-07-23 | 2023-01-23 | 2023-07-23 |
 | --- | --- | --- | --- | --- | --- | --- |
