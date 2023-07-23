@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/chromedp/chromedp v0.9.1
-	github.com/go-echarts/go-echarts/v2 v2.2.7
+	github.com/go-echarts/go-echarts/v2 v2.2.6
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.16.0
 	golang.org/x/sync v0.3.0
@@ -13,6 +13,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
 
 require (
