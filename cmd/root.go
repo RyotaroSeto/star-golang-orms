@@ -15,7 +15,6 @@ func Execute() {
 	err := infra.Load(".")
 	if err != nil {
 		log.Fatal("cannot load config", err)
-		return
 	}
 
 	log.Println(ctx)
