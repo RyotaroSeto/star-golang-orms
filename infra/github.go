@@ -17,8 +17,6 @@ type GitHubRepository struct {
 	client *http.Client
 }
 
-var _ repository.GitHub = &GitHubRepository{}
-
 func NewGitHubRepository(ctx context.Context) repository.GitHub {
 	return &GitHubRepository{
 		client: registryHTTPClient(),
@@ -34,8 +32,8 @@ func (r *GitHubRepository) get(ctx context.Context, req *http.Request) (*http.Re
 	return res, nil
 }
 
-func (r *GitHubRepository) newHttpRequest(ctx context.Context, rn model.RepositoryName) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+fmt.Sprintf("repos/%s", rn), nil)
+func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +44,7 @@ func (r *GitHubRepository) newHttpRequest(ctx context.Context, rn model.Reposito
 
 // httpmockを使ってテストを書く
 func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.GitHubRepository, error) {
-	req, err := r.newHttpRequest(ctx, rn)
+	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s", rn))
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +72,31 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 	return repo, nil
 }
 
-func (r *GitHubRepository) GetStar(ctx context.Context) (int, error) {
-	return 0, nil
+func (r *GitHubRepository) GetStarPage(ctx context.Context, repo model.GitHubRepository, page int) (*model.Stargazer, error) {
+	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := r.get(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return nil, errors.New(string(b))
+	}
+
+	var stars *model.Stargazer
+	if err := json.Unmarshal(b, &stars); err != nil {
+		return nil, err
+	}
+
+	return stars, nil
 }
