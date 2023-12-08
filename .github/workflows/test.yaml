@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  pull_request:
+    branches-ignore:
+      - main
+    paths:
+      - 'infra/**'
+      - 'domain/**'
+      - 'app/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: ./go.mod
+          cache-dependency-path: ./go.sum
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Lint
+        run: go vet -v ./...
