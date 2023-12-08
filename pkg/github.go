@@ -2,12 +2,7 @@ package pkg
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -117,29 +112,30 @@ func (r *ReadmeDetailsRepository) updateStarCount(period string, starredAt time.
 	}
 }
 
-func NowGithubRepoCount(ctx context.Context, name, token string) (GithubRepository, error) {
-	url := baseURL + fmt.Sprintf("repos/%s", name)
-	client := NewHttpClient(url, http.MethodGet, token)
-	res, err := client.SendRequest()
-	if err != nil {
-		return GithubRepository{}, err
-	}
+// GetRepository
+// func NowGithubRepoCount(ctx context.Context, name, token string) (GithubRepository, error) {
+// 	url := baseURL + fmt.Sprintf("repos/%s", name)
+// 	client := NewHttpClient(url, http.MethodGet, token)
+// 	res, err := client.SendRequest()
+// 	if err != nil {
+// 		return GithubRepository{}, err
+// 	}
 
-	bts, err := io.ReadAll(res.Body)
-	if err != nil {
-		return GithubRepository{}, err
-	}
-	defer res.Body.Close()
+// 	bts, err := io.ReadAll(res.Body)
+// 	if err != nil {
+// 		return GithubRepository{}, err
+// 	}
+// 	defer res.Body.Close()
 
-	var repo GithubRepository
-	if res.StatusCode == http.StatusOK {
-		if err := json.Unmarshal(bts, &repo); err != nil {
-			return GithubRepository{}, err
-		}
-	}
+// 	var repo GithubRepository
+// 	if res.StatusCode == http.StatusOK {
+// 		if err := json.Unmarshal(bts, &repo); err != nil {
+// 			return GithubRepository{}, err
+// 		}
+// 	}
 
-	return repo, nil
-}
+// 	return repo, nil
+// }
 
 func getStargazersCountByRepo(ctx context.Context, token string, repo GithubRepository) []Stargazer {
 	sem := make(chan bool, 4)
@@ -179,85 +175,85 @@ func totalPages(repo GithubRepository) int {
 	return repo.StargazersCount / 100
 }
 
-func getStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
-	var stars []Stargazer
+// func getStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
+// 	var stars []Stargazer
 
-	url := baseURL + fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
-	client := NewHttpClient(url, http.MethodGet, token)
-	res, err := client.SendRequest()
-	if err != nil {
-		return nil, err
-	}
+// 	url := baseURL + fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
+// 	client := NewHttpClient(url, http.MethodGet, token)
+// 	res, err := client.SendRequest()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	bts, err := io.ReadAll(res.Body)
-	if err != nil {
-		return stars, err
-	}
-	defer res.Body.Close()
+// 	bts, err := io.ReadAll(res.Body)
+// 	if err != nil {
+// 		return stars, err
+// 	}
+// 	defer res.Body.Close()
 
-	switch res.StatusCode {
-	case http.StatusOK:
-		if err := json.Unmarshal(bts, &stars); err != nil {
-			return nil, err
-		}
-		if len(stars) == 0 {
-			return nil, ErrNoStars
-		}
-		return stars, nil
-	default:
-		return nil, ErrOtherReason
-	}
-}
+// 	switch res.StatusCode {
+// 	case http.StatusOK:
+// 		if err := json.Unmarshal(bts, &stars); err != nil {
+// 			return nil, err
+// 		}
+// 		if len(stars) == 0 {
+// 			return nil, ErrNoStars
+// 		}
+// 		return stars, nil
+// 	default:
+// 		return nil, ErrOtherReason
+// 	}
+// }
 
-type GithubUser struct {
-	AvatarURL string `json:"avatar_url"`
-}
+// type GithubUser struct {
+// 	AvatarURL string `json:"avatar_url"`
+// }
 
-func GetRepoLogoUrl(repoName string, token string) (string, error) {
-	owner := strings.Split(repoName, "/")[0]
-	url := baseURL + fmt.Sprintf("users/%s", owner)
-	client := NewHttpClient(url, http.MethodGet, token)
-	res, err := client.SendRequest()
-	if err != nil {
-		return "", err
-	}
+// func GetRepoLogoUrl(repoName string, token string) (string, error) {
+// 	owner := strings.Split(repoName, "/")[0]
+// 	url := baseURL + fmt.Sprintf("users/%s", owner)
+// 	client := NewHttpClient(url, http.MethodGet, token)
+// 	res, err := client.SendRequest()
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	var user GithubUser
-	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
+// 	var user GithubUser
+// 	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
+// 		return "", err
+// 	}
+// 	defer res.Body.Close()
 
-	return user.AvatarURL, nil
-}
+// 	return user.AvatarURL, nil
+// }
 
-func GetRateLimit(token string) error {
-	url := baseURL + rateLimit
-	client := NewHttpClient(url, http.MethodGet, token)
-	res, err := client.SendRequest()
-	if err != nil {
-		return err
-	}
+// func GetRateLimit(token string) error {
+// 	url := baseURL + rateLimit
+// 	client := NewHttpClient(url, http.MethodGet, token)
+// 	res, err := client.SendRequest()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	bts, err := io.ReadAll(res.Body)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+// 	bts, err := io.ReadAll(res.Body)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer res.Body.Close()
 
-	switch res.StatusCode {
-	case http.StatusOK:
-		var r map[string]interface{}
-		if err := json.Unmarshal(bts, &r); err != nil {
-			return err
-		}
-		fmt.Println(r)
-		return nil
-	case http.StatusNotModified:
-		return ErrRateLimit
-	case http.StatusNotFound:
-		return ErrNotFound
-	default:
-		return ErrOtherReason
-	}
-}
+// 	switch res.StatusCode {
+// 	case http.StatusOK:
+// 		var r map[string]interface{}
+// 		if err := json.Unmarshal(bts, &r); err != nil {
+// 			return err
+// 		}
+// 		fmt.Println(r)
+// 		return nil
+// 	case http.StatusNotModified:
+// 		return ErrRateLimit
+// 	case http.StatusNotFound:
+// 		return ErrNotFound
+// 	default:
+// 		return ErrOtherReason
+// 	}
+// }
