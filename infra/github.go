@@ -42,7 +42,6 @@ func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*htt
 	return req, nil
 }
 
-// httpmockを使ってテストを書く
 func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.GitHubRepository, error) {
 	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s", rn))
 	if err != nil {
