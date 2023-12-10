@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"os/signal"
+	"star-golang-orms/app"
+	"star-golang-orms/domain/service"
 	"star-golang-orms/infra"
 	"syscall"
 )
@@ -17,28 +19,14 @@ func Execute() {
 		log.Fatal("cannot load config", err)
 	}
 
-	log.Println(ctx)
-	// gh, err := pkg.ExecGitHubAPI(ctx, config.GitHubToken)
-	// if err != nil {
-	// 	log.Fatal("cannot exec github api", err)
-	// 	return
-	// }
+	svc := setupJob(ctx)
+	err = svc.Start(ctx)
+	if err != nil {
+		log.Fatal("cannot start job", err)
+	}
+}
 
-	// err = gh.SortDesByStarCount()
-	// if err != nil {
-	// 	log.Fatal("cannot sort star count", err)
-	// 	return
-	// }
-
-	// err = gh.MakeChart()
-	// if err != nil {
-	// 	log.Fatal("cannot make chart", err)
-	// 	return
-	// }
-
-	// err = gh.Edit()
-	// if err != nil {
-	// 	log.Fatal("cannot edit readme", err)
-	// 	return
-	// }
+func setupJob(ctx context.Context) service.Fetcher {
+	repo := infra.NewGitHubRepository(ctx)
+	return app.NewFetchService(repo)
 }
