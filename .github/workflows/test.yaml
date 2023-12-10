@@ -8,6 +8,7 @@ on:
       - 'infra/**'
       - 'domain/**'
       - 'app/**'
+  workflow_dispatch:
 
 jobs:
   build:
