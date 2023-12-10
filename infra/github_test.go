@@ -57,7 +57,7 @@ func TestGitHubRepository_GetRepository(t *testing.T) {
 		expReqJSON string
 		respCode   int
 		respBody   string
-		want       *model.GitHubRepository
+		want       *model.Repository
 		assertion  assert.ErrorAssertionFunc
 	}{
 		{
@@ -68,7 +68,7 @@ func TestGitHubRepository_GetRepository(t *testing.T) {
 			expReqJSON: ``,
 			respCode:   http.StatusOK,
 			respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": 1, "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
-			want: &model.GitHubRepository{
+			want: &model.Repository{
 				FullName:         "test/test",
 				URL:              "",
 				Description:      "test",
@@ -131,7 +131,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	type args struct {
-		repo model.GitHubRepository
+		repo model.Repository
 		page int
 	}
 	tests := []struct {
@@ -140,29 +140,29 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 		expReqJSON string
 		respCode   int
 		respBody   string
-		want       *model.Stargazer
+		want       *[]model.Stargazer
 		assertion  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "success",
 			args: args{
-				repo: model.GitHubRepository{
+				repo: model.Repository{
 					FullName: "test/test",
 				},
 				page: 1,
 			},
 			expReqJSON: ``,
 			respCode:   http.StatusOK,
-			respBody:   `{"starred_at": "2021-01-01T00:00:00Z"}`,
-			want: &model.Stargazer{
-				StarredAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			respBody:   `[{"starred_at": "2021-01-01T00:00:00Z"}]`,
+			want: &[]model.Stargazer{
+				{StarredAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 			},
 			assertion: assert.NoError,
 		},
 		{
 			name: "failed. http status is BadRequest",
 			args: args{
-				repo: model.GitHubRepository{
+				repo: model.Repository{
 					FullName: "test/test",
 				},
 				page: 1,
@@ -176,7 +176,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 		{
 			name: "failed to unmarshal",
 			args: args{
-				repo: model.GitHubRepository{
+				repo: model.Repository{
 					FullName: "test/test",
 				},
 				page: 1,
@@ -202,6 +202,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 			r := &GitHubRepository{
 				client: &http.Client{},
 			}
+
 			got, err := r.GetStarPage(context.Background(), tt.args.repo, tt.args.page)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
