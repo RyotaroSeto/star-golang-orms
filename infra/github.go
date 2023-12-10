@@ -42,7 +42,7 @@ func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*htt
 	return req, nil
 }
 
-func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.GitHubRepository, error) {
+func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.Repository, error) {
 	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s", rn))
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 		return nil, errors.New(string(b))
 	}
 
-	var repo *model.GitHubRepository
+	var repo *model.Repository
 	if err := json.Unmarshal(b, &repo); err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 	return repo, nil
 }
 
-func (r *GitHubRepository) GetStarPage(ctx context.Context, repo model.GitHubRepository, page int) (*model.Stargazer, error) {
+func (r *GitHubRepository) GetStarPage(ctx context.Context, repo model.Repository, page int) (*[]model.Stargazer, error) {
 	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (r *GitHubRepository) GetStarPage(ctx context.Context, repo model.GitHubRep
 		return nil, errors.New(string(b))
 	}
 
-	var stars *model.Stargazer
+	var stars *[]model.Stargazer
 	if err := json.Unmarshal(b, &stars); err != nil {
 		return nil, err
 	}
