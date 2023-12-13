@@ -1,7 +1,6 @@
 package model
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -9,21 +8,19 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/chromedp/chromedp"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
-	"github.com/go-echarts/go-echarts/v2/types"
 )
 
 const (
 	header = `# Golang ORMapper Star 🎉🎉
-	The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
-	If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
-	`
+The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
+If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
+`
 
 	repoTable = `| No. | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
-	| --- | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
-	`
+| --- | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
+`
 
 	divider = "|\n| --- | --- | --- | --- | --- | --- | --- |\n"
 
@@ -64,6 +61,8 @@ func (rs *Repositories) AddRepo(repo *Repository) {
 	*rs = append(*rs, *repo)
 }
 
+type RepositoryDetails []RepositoryDetail
+
 func (rd *RepositoryDetails) AddDetailRepo(repo *Repository, stargazers []Stargazer) {
 	*rd = append(*rd, *NewRepositoryDetails(*repo, stargazers))
 }
@@ -79,24 +78,6 @@ func (gh GitHub) ReadmeEdit() error {
 	gh.editREADME(readme)
 
 	return nil
-}
-
-type RepositoryDetails []RepositoryDetail
-
-func (rds RepositoryDetails) MakeHTMLChartFile() error {
-	line := setUpChart()
-	dates := generateDates()
-	for _, d := range rds {
-		line = d.makeLine(line, dates)
-	}
-
-	f, err := os.Create(htmlFilePath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return line.Render(f)
 }
 
 func NewRepositoryDetails(repo Repository, stargazers []Stargazer) *RepositoryDetail {
@@ -227,10 +208,7 @@ func (rs Repositories) Swap(i, j int) {
 }
 
 func (rs Repositories) Less(i, j int) bool {
-	sort.Slice(rs, func(i, j int) bool {
-		return rs[i].StargazersCount > rs[j].StargazersCount
-	})
-	return false
+	return rs[i].StargazersCount > rs[j].StargazersCount
 }
 
 func ReadmeDetailsRepositorySort(rds RepositoryDetails) RepositoryDetails {
@@ -250,10 +228,7 @@ func (rds RepositoryDetails) Swap(i, j int) {
 }
 
 func (rds RepositoryDetails) Less(i, j int) bool {
-	sort.Slice(rds, func(i, j int) bool {
-		return rds[i].StarCounts["StarCountNow"] > rds[j].StarCounts["StarCountNow"]
-	})
-	return false
+	return rds[i].StarCounts["StarCountNow"] > rds[j].StarCounts["StarCountNow"]
 }
 
 func LastPage(repo Repository) int {
@@ -262,64 +237,6 @@ func LastPage(repo Repository) int {
 
 func totalPages(repo Repository) int {
 	return repo.StargazersCount / 100
-}
-
-func ConvertHTMLToImage() error {
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-
-	options := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", false),
-		chromedp.Flag("disable-gpu", true),
-		chromedp.Flag("ignore-certificate-errors", true),
-	)
-	execAllocatorOpts := append(chromedp.DefaultExecAllocatorOptions[:], options...)
-	ctx, cancel = chromedp.NewExecAllocator(ctx, execAllocatorOpts...)
-	defer cancel()
-
-	ctx, cancel = chromedp.NewContext(ctx)
-	defer cancel()
-
-	htmlContent, err := os.Open(htmlFilePath)
-	if err != nil {
-		return err
-	}
-	defer htmlContent.Close()
-
-	data, err := io.ReadAll(htmlContent)
-	if err != nil {
-		return err
-	}
-
-	var buf []byte
-	if err := chromedp.Run(ctx, screenshotTask(string(data), &buf)); err != nil {
-		return err
-	}
-
-	return saveToFile(jpegFilePath, buf)
-}
-
-func screenshotTask(htmlContent string, res *[]byte) chromedp.Tasks {
-	return chromedp.Tasks{
-		chromedp.Navigate("data:text/html," + htmlContent),
-		chromedp.WaitVisible("body", chromedp.ByQuery),
-		chromedp.Screenshot("body", res, chromedp.NodeVisible, chromedp.ByQuery),
-	}
-}
-
-func saveToFile(filepath string, data []byte) error {
-	file, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = file.Write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func generateDetailRepoTableHeader() string {
@@ -378,12 +295,4 @@ func writeDetailRepositories(w io.Writer, detailRepos []RepositoryDetail) {
 	for _, d := range detailRepos {
 		d.writeDetailRepo(w)
 	}
-}
-
-func setUpChart() *charts.Line {
-	line := charts.NewLine()
-	line.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
-	)
-	return line
 }

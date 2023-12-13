@@ -20,6 +20,7 @@ func Execute() {
 	}
 
 	svc := setupJob(ctx)
+
 	err = svc.Start(ctx)
 	if err != nil {
 		log.Fatal("cannot start job", err)
@@ -28,5 +29,6 @@ func Execute() {
 
 func setupJob(ctx context.Context) service.Fetcher {
 	repo := infra.NewGitHubRepository(ctx)
+
 	return app.NewFetchService(repo)
 }

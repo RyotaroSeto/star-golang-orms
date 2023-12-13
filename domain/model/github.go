@@ -3,11 +3,28 @@ package model
 import (
 	"fmt"
 	"io"
+	"sync"
 	"time"
 )
 
 type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
+}
+
+type Stargazers struct {
+	Stars []Stargazer
+}
+
+type StargazerPool struct {
+	Stargazers Stargazers
+}
+
+func (sp *StargazerPool) Add(stargazers Stargazers) {
+	var lock sync.Mutex
+	lock.Lock()
+	defer lock.Unlock()
+
+	sp.Stargazers.Stars = append(sp.Stargazers.Stars, stargazers.Stars...)
 }
 
 type Repository struct {
@@ -27,11 +44,20 @@ func (r Repository) RepositoryName() RepositoryName {
 }
 
 func (repo Repository) writeRepoRow(w io.Writer, repoNo int) {
-	rowFormat := "| %d | [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
-	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
-	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)
-
-	fmt.Fprintf(w, rowFormat, repoNo, repo.FullName, repo.URL, repo.StargazersCount, repo.SubscribersCount, repo.ForksCount, repo.OpenIssuesCount, repo.Description, createdAt, updatedAt)
+	fmt.Fprintf(
+		w,
+		"| %d | [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n",
+		repoNo,
+		repo.FullName,
+		repo.URL,
+		repo.StargazersCount,
+		repo.SubscribersCount,
+		repo.ForksCount,
+		repo.OpenIssuesCount,
+		repo.Description,
+		repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat),
+		repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat),
+	)
 }
 
 type RepositoryName string
