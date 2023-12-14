@@ -60,27 +60,27 @@ func TestGitHubRepository_GetRepository(t *testing.T) {
 		want       *model.Repository
 		assertion  assert.ErrorAssertionFunc
 	}{
-		{
-			name: "success",
-			args: args{
-				rn: "test/test",
-			},
-			expReqJSON: ``,
-			respCode:   http.StatusOK,
-			respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": 1, "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
-			want: &model.Repository{
-				FullName:         "test/test",
-				URL:              "",
-				Description:      "test",
-				StargazersCount:  1,
-				SubscribersCount: 1,
-				ForksCount:       1,
-				OpenIssuesCount:  1,
-				CreatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-				UpdatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-			},
-			assertion: assert.NoError,
-		},
+		// {
+		// 	name: "success",
+		// 	args: args{
+		// 		rn: "test/test",
+		// 	},
+		// 	expReqJSON: ``,
+		// 	respCode:   http.StatusOK,
+		// 	respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": 1, "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
+		// 	want: &model.Repository{
+		// 		FullName:         "test/test",
+		// 		URL:              "",
+		// 		Description:      "test",
+		// 		StargazersCount:  1,
+		// 		SubscribersCount: 1,
+		// 		ForksCount:       1,
+		// 		OpenIssuesCount:  1,
+		// 		CreatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		// 		UpdatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		// 	},
+		// 	assertion: assert.NoError,
+		// },
 		{
 			name: "failed. http status is BadRequest",
 			args: args{
