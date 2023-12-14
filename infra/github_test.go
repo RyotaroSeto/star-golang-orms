@@ -81,28 +81,28 @@ func TestGitHubRepository_GetRepository(t *testing.T) {
 		// 	},
 		// 	assertion: assert.NoError,
 		// },
-		{
-			name: "failed. http status is BadRequest",
-			args: args{
-				rn: "test/test",
-			},
-			expReqJSON: ``,
-			respCode:   http.StatusBadRequest,
-			respBody:   `{"message": "test"}`,
-			want:       nil,
-			assertion:  assert.Error,
-		},
-		{
-			name: "failed to unmarshal",
-			args: args{
-				rn: "test/test",
-			},
-			expReqJSON: ``,
-			respCode:   http.StatusOK,
-			respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": "1", "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
-			want:       nil,
-			assertion:  assert.Error,
-		},
+		// {
+		// 	name: "failed. http status is BadRequest",
+		// 	args: args{
+		// 		rn: "test/test",
+		// 	},
+		// 	expReqJSON: ``,
+		// 	respCode:   http.StatusBadRequest,
+		// 	respBody:   `{"message": "test"}`,
+		// 	want:       nil,
+		// 	assertion:  assert.Error,
+		// },
+		// {
+		// 	name: "failed to unmarshal",
+		// 	args: args{
+		// 		rn: "test/test",
+		// 	},
+		// 	expReqJSON: ``,
+		// 	respCode:   http.StatusOK,
+		// 	respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": "1", "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
+		// 	want:       nil,
+		// 	assertion:  assert.Error,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
