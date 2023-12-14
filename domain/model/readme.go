@@ -55,8 +55,11 @@ type RepositoryDetails []RepositoryDetail
 // 	lock              sync.Mutex
 // }
 
-// func (rd *RepositoryDetails) AddDetailRepo(repo *Repository, stargazers []Stargazer) {
-// 	*rd = append(*rd, *NewRepositoryDetails(*repo, stargazers))
+// func (rds *RepositoryDetails) Add(repos []RepositoryDetail) {
+// 	rds.lock.Lock()
+// 	defer rds.lock.Unlock()
+
+// 	rds.RepositoryDetails = append(rds.RepositoryDetails, repos...)
 // }
 
 type Repositories []Repository
@@ -197,9 +200,14 @@ func (d RepositoryDetail) generateStarHistorys() []opts.LineData {
 	return starHistorys
 }
 
-func GithubRepositorySort(rs Repositories) Repositories {
-	tmpRepositories := make(Repositories, len(rs))
-	copy(tmpRepositories, rs)
+func (gh *GitHub) ReadmeRepoAndDetailSort() {
+	gh.GithubRepositorySort()
+	gh.ReadmeDetailsRepositorySort()
+}
+
+func (gh *GitHub) GithubRepositorySort() Repositories {
+	tmpRepositories := make(Repositories, len(gh.Repositories))
+	copy(tmpRepositories, gh.Repositories)
 	sort.Sort(tmpRepositories)
 
 	return tmpRepositories
@@ -217,9 +225,9 @@ func (rs Repositories) Less(i, j int) bool {
 	return rs[i].StargazersCount > rs[j].StargazersCount
 }
 
-func ReadmeDetailsRepositorySort(rds RepositoryDetails) RepositoryDetails {
-	tmpRepositoryDetails := make(RepositoryDetails, len(rds))
-	copy(tmpRepositoryDetails, rds)
+func (gh *GitHub) ReadmeDetailsRepositorySort() RepositoryDetails {
+	tmpRepositoryDetails := make(RepositoryDetails, len(gh.RepositoryDetails))
+	copy(tmpRepositoryDetails, gh.RepositoryDetails)
 	sort.Sort(tmpRepositoryDetails)
 
 	return tmpRepositoryDetails

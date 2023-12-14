@@ -37,6 +37,7 @@ func (s *fetchService) Start(ctx context.Context) error {
 		return err
 	}
 
+	gh.ReadmeRepoAndDetailSort()
 	if err = gh.MakeHTMLChartFile(); err != nil {
 		return err
 	}
