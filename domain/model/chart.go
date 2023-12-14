@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"io"
+	"log"
 	"os"
 
 	"github.com/chromedp/chromedp"
@@ -21,7 +22,11 @@ func (rds RepositoryDetails) MakeHTMLChartFile() error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err = f.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	return line.Render(f)
 }
@@ -74,7 +79,11 @@ func saveToFile(filepath string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err = file.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	_, err = file.Write(data)
 

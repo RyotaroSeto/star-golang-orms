@@ -131,7 +131,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	type args struct {
-		repo model.Repository
+		repo *model.Repository
 		page int
 	}
 	tests := []struct {
@@ -146,7 +146,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				repo: model.Repository{
+				repo: &model.Repository{
 					FullName: "test/test",
 				},
 				page: 1,
@@ -162,7 +162,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 		{
 			name: "failed. http status is BadRequest",
 			args: args{
-				repo: model.Repository{
+				repo: &model.Repository{
 					FullName: "test/test",
 				},
 				page: 1,
@@ -176,7 +176,7 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 		{
 			name: "failed to unmarshal",
 			args: args{
-				repo: model.Repository{
+				repo: &model.Repository{
 					FullName: "test/test",
 				},
 				page: 1,

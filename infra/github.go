@@ -71,7 +71,7 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 	return repo, nil
 }
 
-func (r *GitHubRepository) GetStarPage(ctx context.Context, repo model.Repository, page int) (*[]model.Stargazer, error) {
+func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*[]model.Stargazer, error) {
 	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
 	if err != nil {
 		return nil, err

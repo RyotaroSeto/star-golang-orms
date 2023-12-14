@@ -13,18 +13,21 @@ type Stargazer struct {
 
 type Stargazers struct {
 	Stars []Stargazer
+	lock  sync.Mutex
 }
 
-type StargazerPool struct {
-	Stargazers Stargazers
+func NewStargazers() *Stargazers {
+	return &Stargazers{
+		Stars: make([]Stargazer, 0),
+		lock:  sync.Mutex{},
+	}
 }
 
-func (sp *StargazerPool) Add(stargazers Stargazers) {
-	var lock sync.Mutex
-	lock.Lock()
-	defer lock.Unlock()
+func (ss *Stargazers) Add(stargazers []Stargazer) {
+	ss.lock.Lock()
+	defer ss.lock.Unlock()
 
-	sp.Stargazers.Stars = append(sp.Stargazers.Stars, stargazers.Stars...)
+	ss.Stars = append(ss.Stars, stargazers...)
 }
 
 type Repository struct {

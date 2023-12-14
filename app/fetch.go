@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"errors"
 	"log"
+	"star-golang-orms/domain"
 	"star-golang-orms/domain/model"
 	"star-golang-orms/domain/repository"
 	"star-golang-orms/domain/service"
@@ -11,8 +13,7 @@ import (
 
 type fetchService struct {
 	gitHubRepo  repository.GitHub
-	wgR         sync.WaitGroup
-	wgD         sync.WaitGroup
+	wg          sync.WaitGroup
 	mu          sync.Mutex
 	repos       model.Repositories
 	detailRepos model.RepositoryDetails
@@ -22,8 +23,7 @@ type fetchService struct {
 func NewFetchService(repo repository.GitHub) service.Fetcher {
 	return &fetchService{
 		gitHubRepo:  repo,
-		wgR:         sync.WaitGroup{},
-		wgD:         sync.WaitGroup{},
+		wg:          sync.WaitGroup{},
 		mu:          sync.Mutex{},
 		repos:       make(model.Repositories, 0, len(model.TargetRepository)),
 		detailRepos: make(model.RepositoryDetails, 0, len(model.TargetRepository)),
@@ -67,9 +67,9 @@ func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHu
 		return err
 	default:
 		for _, repoNm := range model.TargetRepository {
-			s.wgR.Add(1)
+			s.wg.Add(1)
 			go func(repoNm string) {
-				defer s.wgR.Done()
+				defer s.wg.Done()
 				repo, err := s.gitHubRepo.GetRepository(ctx, model.RepositoryName(repoNm))
 				if err != nil {
 					s.errCh <- err
@@ -78,61 +78,47 @@ func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHu
 				s.repos = append(s.repos, *repo)
 
 				log.Println(repoNm + " Start")
-				stargazers := s.getStargazersCountByRepo(ctx, *repo)
+				stargazers := s.getStargazersCountByRepo(ctx, repo)
 				log.Println(repoNm + " DONE")
 
+				rd := model.NewRepositoryDetails(repo, stargazers)
 				s.mu.Lock()
 				defer s.mu.Unlock()
-				s.detailRepos = append(s.detailRepos, *model.NewRepositoryDetails(*repo, stargazers))
+				s.detailRepos = append(s.detailRepos, rd)
 			}(repoNm)
 		}
 	}
-	s.wgR.Wait()
+	s.wg.Wait()
 
 	return nil
 }
 
-// func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo model.Repository) []model.Stargazer {
-// 	var lock sync.Mutex
-// 	var stargazers []model.Stargazer
-// 	for page := 1; page <= model.LastPage(repo); page++ {
-// 		s.wgD.Add(1)
-// 		go func(page int) {
-// 			defer s.wgD.Done()
-// 			pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
-// 			if errors.Is(err, domain.ErrNoMorePages) {
-// 				return
-// 			}
-// 			if err != nil {
-// 				s.errCh <- err
-// 				return
-// 			}
-// 			lock.Lock()
-// 			defer lock.Unlock()
-// 			stargazers = append(stargazers, *pagers...)
-// 		}(page)
-// 	}
-// 	s.wgD.Wait()
+func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model.Repository) []model.Stargazer {
+	var (
+		stargazers = model.NewStargazers()
+		wg         sync.WaitGroup
+	)
+	for page := 1; page <= model.LastPage(repo); page++ {
+		wg.Add(1)
+		go func(page int) {
+			defer wg.Done()
+			s.fetchStargazersPage(ctx, repo, page, stargazers)
+		}(page)
+	}
+	wg.Wait()
 
-// 	return stargazers
-// }
+	return stargazers.Stars
+}
 
-// defer wg.Done()
-// 			repo, err := s.gitHubRepo.GetRepository(ctx, model.RepositoryName(repoNm))
-// 			if err != nil {
-// 				log.Println(err)
-// 				return
-// 			}
-// 			rs.AddRepo(repo)
+func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) {
+	pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
+	if errors.Is(err, domain.ErrNoMorePages) {
+		return
+	}
+	if err != nil {
+		s.errCh <- err
+		return
+	}
 
-// 			log.Println(repoNm + " Start")
-// 			stargazers := s.getStargazersCountByRepo(ctx, *repo)
-// 			log.Println(repoNm + " DONE")
-
-// s.mu.Lock()
-// defer s.mu.Unlock()
-// dr.AddDetailRepo(repo, stargazers)
-
-// gorutionをリファクタする
-// appendをドメイン層でやる
-// メソッド名、責務を考える
+	stargazers.Add(*pagers)
+}

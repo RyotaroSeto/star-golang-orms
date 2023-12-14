@@ -48,23 +48,28 @@ type RepositoryDetail struct {
 	StarCounts map[string]int
 }
 
+type RepositoryDetails []RepositoryDetail
+
+// type RepositoryDetails struct {
+// 	RepositoryDetails []RepositoryDetail
+// 	lock              sync.Mutex
+// }
+
+// func (rd *RepositoryDetails) AddDetailRepo(repo *Repository, stargazers []Stargazer) {
+// 	*rd = append(*rd, *NewRepositoryDetails(*repo, stargazers))
+// }
+
 type Repositories []Repository
+
+func (rs *Repositories) AddRepo(repo *Repository) {
+	*rs = append(*rs, *repo)
+}
 
 func NewGitHub(repos Repositories, details RepositoryDetails) *GitHub {
 	return &GitHub{
 		Repositories:      repos,
 		RepositoryDetails: details,
 	}
-}
-
-func (rs *Repositories) AddRepo(repo *Repository) {
-	*rs = append(*rs, *repo)
-}
-
-type RepositoryDetails []RepositoryDetail
-
-func (rd *RepositoryDetails) AddDetailRepo(repo *Repository, stargazers []Stargazer) {
-	*rd = append(*rd, *NewRepositoryDetails(*repo, stargazers))
 }
 
 func (gh GitHub) ReadmeEdit() error {
@@ -80,7 +85,7 @@ func (gh GitHub) ReadmeEdit() error {
 	return nil
 }
 
-func NewRepositoryDetails(repo Repository, stargazers []Stargazer) *RepositoryDetail {
+func NewRepositoryDetails(repo *Repository, stargazers []Stargazer) RepositoryDetail {
 	r := &RepositoryDetail{
 		RepoName: repo.RepositoryName(),
 		RepoURL:  repo.URL,
@@ -104,7 +109,8 @@ func NewRepositoryDetails(repo Repository, stargazers []Stargazer) *RepositoryDe
 		},
 	}
 	r.calculateStarCount(stargazers)
-	return r
+
+	return *r
 }
 
 func (r *RepositoryDetail) calculateStarCount(stargazers []Stargazer) {
@@ -231,11 +237,11 @@ func (rds RepositoryDetails) Less(i, j int) bool {
 	return rds[i].StarCounts["StarCountNow"] > rds[j].StarCounts["StarCountNow"]
 }
 
-func LastPage(repo Repository) int {
+func LastPage(repo *Repository) int {
 	return totalPages(repo) + 1
 }
 
-func totalPages(repo Repository) int {
+func totalPages(repo *Repository) int {
 	return repo.StargazersCount / 100
 }
 
