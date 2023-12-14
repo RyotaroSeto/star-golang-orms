@@ -37,6 +37,7 @@ func (s *fetchService) Start(ctx context.Context) error {
 		return err
 	}
 
+	gh.ReadmeRepoAndDetailSort()
 	if err = gh.MakeHTMLChartFile(); err != nil {
 		return err
 	}
@@ -102,7 +103,8 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			s.fetchStargazersPage(ctx, repo, page, stargazers)
+			pages := s.fetchStargazersPage(ctx, repo, page, stargazers)
+			stargazers.Add(*pages)
 		}(page)
 	}
 	wg.Wait()
@@ -110,15 +112,14 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 	return stargazers.Stars
 }
 
-func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) {
+func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) *[]model.Stargazer {
 	pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
 	if errors.Is(err, domain.ErrNoMorePages) {
-		return
+		return nil
 	}
 	if err != nil {
 		s.errCh <- err
-		return
+		return nil
 	}
-
-	stargazers.Add(*pagers)
+	return pagers
 }
