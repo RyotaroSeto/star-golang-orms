@@ -64,17 +64,6 @@ type RepositoryDetails []RepositoryDetail
 
 type Repositories []Repository
 
-func (rs *Repositories) AddRepo(repo *Repository) {
-	*rs = append(*rs, *repo)
-}
-
-func NewGitHub(repos Repositories, details RepositoryDetails) *GitHub {
-	return &GitHub{
-		Repositories:      repos,
-		RepositoryDetails: details,
-	}
-}
-
 func (gh GitHub) ReadmeEdit() error {
 	readme, err := os.Create("./" + README)
 	if err != nil {
