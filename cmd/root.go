@@ -14,7 +14,7 @@ func Execute() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	err := infra.Load(".")
+	err := infra.Load(ctx)
 	if err != nil {
 		log.Fatal("cannot load config", err)
 	}
