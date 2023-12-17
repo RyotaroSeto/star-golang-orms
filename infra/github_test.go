@@ -16,7 +16,7 @@ import (
 
 func TestMain(m *testing.M) {
 	os.Setenv("GITHUB_TOKEN", "test_token")
-	Load("../")
+	Load(context.Background())
 	os.Exit(m.Run())
 }
 

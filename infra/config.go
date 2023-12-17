@@ -1,32 +1,37 @@
 package infra
 
 import (
-	"errors"
+	"context"
 	"fmt"
 
-	"github.com/spf13/viper"
+	"github.com/sethvargo/go-envconfig"
 )
 
 type Config struct {
-	GitHubToken string `mapstructure:"GITHUB_TOKEN"`
+	// GitHubToken string `mapstructure:"GITHUB_TOKEN"`
+	GitHubToken string `env:"GITHUB_TOKEN,required"`
 }
 
 var c *Config
 
-func Load(path string) error {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+func Load(ctx context.Context) error {
+	// viper.AddConfigPath(path)
+	// viper.SetConfigName("app")
+	// viper.SetConfigType("env")
 
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil {
-		return errors.New("cannot read config")
-	}
+	// viper.AutomaticEnv()
+	// err := viper.ReadInConfig()
+	// if err != nil {
+	// 	return errors.New("cannot read config")
+	// }
 
+	// var cfg Config
+	// err = viper.Unmarshal(&cfg)
+	// if err != nil {
+	// 	return fmt.Errorf("cannot unmarshal config: %w", err)
+	// }
 	var cfg Config
-	err = viper.Unmarshal(&cfg)
-	if err != nil {
+	if err := envconfig.Process(ctx, &cfg); err != nil {
 		return fmt.Errorf("cannot unmarshal config: %w", err)
 	}
 
