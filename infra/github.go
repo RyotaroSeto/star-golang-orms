@@ -63,11 +63,7 @@ func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string, result
 		return errors.New(string(b))
 	}
 
-	if err := json.Unmarshal(b, result); err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(b, result)
 }
 
 func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.Repository, error) {

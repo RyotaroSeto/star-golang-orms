@@ -16,7 +16,7 @@ import (
 
 func TestMain(m *testing.M) {
 	os.Setenv("GITHUB_TOKEN", "test_token")
-	Load("../")
+	Load(context.Background())
 	os.Exit(m.Run())
 }
 
@@ -60,49 +60,49 @@ func TestGitHubRepository_GetRepository(t *testing.T) {
 		want       *model.Repository
 		assertion  assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "success",
-		// 	args: args{
-		// 		rn: "test/test",
-		// 	},
-		// 	expReqJSON: ``,
-		// 	respCode:   http.StatusOK,
-		// 	respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": 1, "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
-		// 	want: &model.Repository{
-		// 		FullName:         "test/test",
-		// 		URL:              "",
-		// 		Description:      "test",
-		// 		StargazersCount:  1,
-		// 		SubscribersCount: 1,
-		// 		ForksCount:       1,
-		// 		OpenIssuesCount:  1,
-		// 		CreatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-		// 		UpdatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-		// 	},
-		// 	assertion: assert.NoError,
-		// },
-		// {
-		// 	name: "failed. http status is BadRequest",
-		// 	args: args{
-		// 		rn: "test/test",
-		// 	},
-		// 	expReqJSON: ``,
-		// 	respCode:   http.StatusBadRequest,
-		// 	respBody:   `{"message": "test"}`,
-		// 	want:       nil,
-		// 	assertion:  assert.Error,
-		// },
-		// {
-		// 	name: "failed to unmarshal",
-		// 	args: args{
-		// 		rn: "test/test",
-		// 	},
-		// 	expReqJSON: ``,
-		// 	respCode:   http.StatusOK,
-		// 	respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": "1", "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
-		// 	want:       nil,
-		// 	assertion:  assert.Error,
-		// },
+		{
+			name: "success",
+			args: args{
+				rn: "test/test",
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusOK,
+			respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": 1, "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
+			want: &model.Repository{
+				FullName:         "test/test",
+				URL:              "",
+				Description:      "test",
+				StargazersCount:  1,
+				SubscribersCount: 1,
+				ForksCount:       1,
+				OpenIssuesCount:  1,
+				CreatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				UpdatedAt:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+			},
+			assertion: assert.NoError,
+		},
+		{
+			name: "failed. http status is BadRequest",
+			args: args{
+				rn: "test/test",
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusBadRequest,
+			respBody:   `{"message": "test"}`,
+			want:       nil,
+			assertion:  assert.Error,
+		},
+		{
+			name: "failed to unmarshal",
+			args: args{
+				rn: "test/test",
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusOK,
+			respBody:   `{"full_name": "test/test", "html_url": "", "description": "test", "stargazers_count": "1", "subscribers_count": 1, "forks_count": 1, "open_issues_count": 1, "created_at": "2021-01-01T00:00:00Z", "updated_at": "2021-01-01T00:00:00Z"}`,
+			want:       nil,
+			assertion:  assert.Error,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -143,50 +143,50 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 		want       *[]model.Stargazer
 		assertion  assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "success",
-		// 	args: args{
-		// 		repo: &model.Repository{
-		// 			FullName: "test/test",
-		// 		},
-		// 		page: 1,
-		// 	},
-		// 	expReqJSON: ``,
-		// 	respCode:   http.StatusOK,
-		// 	respBody:   `[{"starred_at": "2021-01-01T00:00:00Z"}]`,
-		// 	want: &[]model.Stargazer{
-		// 		{StarredAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
-		// 	},
-		// 	assertion: assert.NoError,
-		// },
-		// {
-		// 	name: "failed. http status is BadRequest",
-		// 	args: args{
-		// 		repo: &model.Repository{
-		// 			FullName: "test/test",
-		// 		},
-		// 		page: 1,
-		// 	},
-		// 	expReqJSON: ``,
-		// 	respCode:   http.StatusBadRequest,
-		// 	respBody:   `{"message": "test"}`,
-		// 	want:       nil,
-		// 	assertion:  assert.Error,
-		// },
-		// {
-		// 	name: "failed to unmarshal",
-		// 	args: args{
-		// 		repo: &model.Repository{
-		// 			FullName: "test/test",
-		// 		},
-		// 		page: 1,
-		// 	},
-		// 	expReqJSON: ``,
-		// 	respCode:   http.StatusOK,
-		// 	respBody:   `{"starred_at": 1}`,
-		// 	want:       nil,
-		// 	assertion:  assert.Error,
-		// },
+		{
+			name: "success",
+			args: args{
+				repo: &model.Repository{
+					FullName: "test/test",
+				},
+				page: 1,
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusOK,
+			respBody:   `[{"starred_at": "2021-01-01T00:00:00Z"}]`,
+			want: &[]model.Stargazer{
+				{StarredAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
+			},
+			assertion: assert.NoError,
+		},
+		{
+			name: "failed. http status is BadRequest",
+			args: args{
+				repo: &model.Repository{
+					FullName: "test/test",
+				},
+				page: 1,
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusBadRequest,
+			respBody:   `{"message": "test"}`,
+			want:       nil,
+			assertion:  assert.Error,
+		},
+		{
+			name: "failed to unmarshal",
+			args: args{
+				repo: &model.Repository{
+					FullName: "test/test",
+				},
+				page: 1,
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusOK,
+			respBody:   `{"starred_at": 1}`,
+			want:       nil,
+			assertion:  assert.Error,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
