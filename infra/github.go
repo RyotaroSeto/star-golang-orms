@@ -42,60 +42,48 @@ func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*htt
 	return req, nil
 }
 
-func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.Repository, error) {
-	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s", rn))
+func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string, result interface{}) error {
+	req, err := r.newHttpRequest(ctx, url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	resp, err := r.get(ctx, req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, errors.New(string(b))
+		return errors.New(string(b))
 	}
 
-	var repo *model.Repository
-	if err := json.Unmarshal(b, &repo); err != nil {
+	if err := json.Unmarshal(b, result); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.Repository, error) {
+	var repo model.Repository
+	if err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", rn), &repo); err != nil {
 		return nil, err
 	}
 
-	return repo, nil
+	return &repo, nil
 }
 
 func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*[]model.Stargazer, error) {
-	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
-	if err != nil {
+	var stars []model.Stargazer
+	if err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page), &stars); err != nil {
 		return nil, err
 	}
 
-	resp, err := r.get(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, errors.New(string(b))
-	}
-
-	var stars *[]model.Stargazer
-	if err := json.Unmarshal(b, &stars); err != nil {
-		return nil, err
-	}
-
-	return stars, nil
+	return &stars, nil
 }
