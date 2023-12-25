@@ -9,23 +9,27 @@ import (
 	"star-golang-orms/domain/service"
 	"star-golang-orms/pkg"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type fetchService struct {
-	gitHubRepo repository.GitHub
-	wg         sync.WaitGroup
-	mu         sync.Mutex
-	repos      model.Repositories
-	errCh      chan error
+	gitHubRepo  repository.GitHub
+	wg          sync.WaitGroup
+	mu          sync.Mutex
+	repos       model.Repositories
+	detailRepos model.RepositoryDetails
+	errCh       chan error
 }
 
 func NewFetchService(repo repository.GitHub) service.Fetcher {
 	return &fetchService{
-		gitHubRepo: repo,
-		wg:         sync.WaitGroup{},
-		mu:         sync.Mutex{},
-		repos:      make(model.Repositories, 0, len(model.TargetRepository)),
-		errCh:      make(chan error),
+		gitHubRepo:  repo,
+		wg:          sync.WaitGroup{},
+		mu:          sync.Mutex{},
+		repos:       make(model.Repositories, 0, len(model.TargetRepository)),
+		detailRepos: make(model.RepositoryDetails, 0, len(model.TargetRepository)),
+		errCh:       make(chan error),
 	}
 }
 
@@ -42,29 +46,19 @@ func (s *fetchService) Start(ctx context.Context) error {
 		return err
 	}
 
-	err = gh.SortDesByStarCount()
-	if err != nil {
-		log.Fatal("cannot sort star count", err)
+	gh.ReadmeRepoAndDetailSort()
+	if err = gh.MakeHTMLChartFile(); err != nil {
 		return err
 	}
 
-	err = gh.MakeChart()
-	if err != nil {
-		log.Fatal("cannot make chart", err)
+	if err = model.ConvertHTMLToImage(); err != nil {
 		return err
 	}
 
-	err = gh.Edit()
-	if err != nil {
-		log.Fatal("cannot edit readme", err)
-		return err
-	}
-	return nil
+	return gh.ReadmeEdit()
 }
 
-func (s *fetchService) ExecGitHubAPI(ctx context.Context, token string) (pkg.GitHub, error) {
-	var detaiRepos []pkg.ReadmeDetailsRepository
-
+func (s *fetchService) ExecGitHubAPI(ctx context.Context, token string) (*model.GitHub, error) {
 	wg := new(sync.WaitGroup)
 	var lock sync.Mutex
 	for _, repoNm := range pkg.TargetRepository {
@@ -78,46 +72,51 @@ func (s *fetchService) ExecGitHubAPI(ctx context.Context, token string) (pkg.Git
 			}
 			s.repos = append(s.repos, *repo)
 			log.Println(repoNm + " Start")
-			stargazers := pkg.GetStargazersCountByRepo(ctx, token, repo)
+			stargazers := GetStargazersCountByRepo(ctx, token, repo)
 			// stargazers := s.GetStargazersCountByRepo(ctx, token, repo)
 			log.Println(repoNm + " DONE")
+
+			rd := model.NewRepositoryDetails(repo, stargazers)
 			lock.Lock()
 			defer lock.Unlock()
-			detaiRepos = append(detaiRepos, pkg.NewDetailsRepository(repo, stargazers))
+			s.detailRepos = append(s.detailRepos, rd)
 		}(repoNm)
 	}
 
 	wg.Wait()
-	gh := pkg.NewGitHub(s.repos, detaiRepos)
-	return gh, nil
+	// gh := pkg.NewGitHub(s.repos, detaiRepos)
+	return &model.GitHub{
+		Repositories:      s.repos,
+		RepositoryDetails: s.detailRepos,
+	}, nil
 }
 
-// func (s *fetchService) GetStargazersCountByRepo(ctx context.Context, token string, repo pkg.GithubRepository) []pkg.Stargazer {
-// 	sem := make(chan bool, 4)
-// 	var eg errgroup.Group
-// 	var lock sync.Mutex
-// 	var stargazers []pkg.Stargazer
-// 	for page := 1; page <= pkg.LastPage(repo); page++ {
-// 		sem <- true
-// 		page := page
-// 		eg.Go(func() error {
-// 			defer func() { <-sem }()
-// 			pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
-// 			// if errors.Is(err, ErrNoMorePages) {
-// 			// 	return nil
-// 			// }
-// 			if err != nil {
-// 				return err
-// 			}
-// 			lock.Lock()
-// 			defer lock.Unlock()
-// 			stargazers = append(stargazers, pagers...)
-// 			return nil
-// 		})
-// 	}
-// 	if err := eg.Wait(); err != nil {
-// 		log.Println(err)
-// 	}
+func GetStargazersCountByRepo(ctx context.Context, token string, repo *model.Repository) []model.Stargazer {
+	sem := make(chan bool, 4)
+	var eg errgroup.Group
+	var lock sync.Mutex
+	var stargazers []model.Stargazer
+	for page := 1; page <= pkg.LastPage(repo); page++ {
+		sem <- true
+		page := page
+		eg.Go(func() error {
+			defer func() { <-sem }()
+			result, err := pkg.GetStargazersPage(ctx, repo, page, token)
+			// if errors.Is(err, ErrNoMorePages) {
+			// 	return nil
+			// }
+			if err != nil {
+				return err
+			}
+			lock.Lock()
+			defer lock.Unlock()
+			stargazers = append(stargazers, result...)
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		log.Println(err)
+	}
 
-// 	return stargazers
-// }
+	return stargazers
+}
