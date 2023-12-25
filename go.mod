@@ -5,7 +5,9 @@ go 1.20
 require (
 	github.com/chromedp/chromedp v0.9.1
 	github.com/go-echarts/go-echarts/v2 v2.2.6
+	github.com/jarcoal/httpmock v1.3.1
 	github.com/pkg/errors v0.9.1
+	github.com/sethvargo/go-envconfig v0.9.0
 	github.com/spf13/viper v1.16.0
 	golang.org/x/sync v0.3.0
 )

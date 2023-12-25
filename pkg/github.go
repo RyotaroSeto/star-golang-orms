@@ -42,36 +42,6 @@ type ReadmeDetailsRepository struct {
 	StarCounts map[string]int
 }
 
-func ExecGitHubAPI(ctx context.Context, token string) (GitHub, error) {
-	var repos []GithubRepository
-	var detaiRepos []ReadmeDetailsRepository
-
-	wg := new(sync.WaitGroup)
-	var lock sync.Mutex
-	for _, repoNm := range TargetRepository {
-		wg.Add(1)
-		go func(repoNm string) {
-			defer wg.Done()
-			repo, err := NowGithubRepoCount(ctx, repoNm, token)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			repos = append(repos, repo)
-			log.Println(repoNm + " Start")
-			stargazers := getStargazersCountByRepo(ctx, token, repo)
-			log.Println(repoNm + " DONE")
-			lock.Lock()
-			defer lock.Unlock()
-			detaiRepos = append(detaiRepos, NewDetailsRepository(repo, stargazers))
-		}(repoNm)
-	}
-
-	wg.Wait()
-	gh := NewGitHub(repos, detaiRepos)
-	return gh, nil
-}
-
 func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) ReadmeDetailsRepository {
 	r := &ReadmeDetailsRepository{
 		RepoName: repo.FullName,
@@ -141,7 +111,7 @@ func NowGithubRepoCount(ctx context.Context, name, token string) (GithubReposito
 	return repo, nil
 }
 
-func getStargazersCountByRepo(ctx context.Context, token string, repo GithubRepository) []Stargazer {
+func GetStargazersCountByRepo(ctx context.Context, token string, repo GithubRepository) []Stargazer {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
