@@ -28,7 +28,7 @@ func Execute() {
 }
 
 func setupJob(ctx context.Context) service.Fetcher {
-	repo := infra.NewGitHubRepository(ctx)
-
-	return app.NewFetchService(repo)
+	return app.NewFetchService(
+		infra.NewGitHubRepository(ctx),
+	)
 }
