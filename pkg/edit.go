@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"star-golang-orms/domain/model"
 	"strconv"
 	"time"
 )
@@ -28,11 +29,11 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 )
 
 type GitHub struct {
-	GithubRepositorys        []GithubRepository
+	GithubRepositorys        model.Repositories
 	ReadmeDetailsRepositorys []ReadmeDetailsRepository
 }
 
-func NewGitHub(gr []GithubRepository, dr []ReadmeDetailsRepository) GitHub {
+func NewGitHub(gr model.Repositories, dr []ReadmeDetailsRepository) GitHub {
 	return GitHub{
 		GithubRepositorys:        gr,
 		ReadmeDetailsRepositorys: dr,
@@ -52,7 +53,7 @@ func (gh GitHub) Edit() error {
 	return nil
 }
 
-func editREADME(w io.Writer, repos []GithubRepository, detailRepos []ReadmeDetailsRepository) {
+func editREADME(w io.Writer, repos model.Repositories, detailRepos []ReadmeDetailsRepository) {
 	writeHeader(w)
 	writeChartJPEG(w)
 	writeRepoTbl(w)
@@ -72,15 +73,15 @@ func writeRepoTbl(w io.Writer) {
 	fmt.Fprint(w, repoTable)
 }
 
-func writeRepositories(w io.Writer, repos []GithubRepository) {
+func writeRepositories(w io.Writer, repos model.Repositories) {
 	repoNo := 1
 	for _, repo := range repos {
-		repo.writeRepoRow(w, repoNo)
+		writeRepoRow(w, repoNo, repo)
 		repoNo++
 	}
 }
 
-func (repo GithubRepository) writeRepoRow(w io.Writer, repoNo int) {
+func writeRepoRow(w io.Writer, repoNo int, repo model.Repository) {
 	rowFormat := "| %d | [%s](%s) | %d | %d | %d | %d | %s | %s | %s |\n"
 	createdAt := repo.CreatedAt.Format(yyyymmddHHmmssHaihunFormat)
 	updatedAt := repo.UpdatedAt.Format(yyyymmddHHmmssHaihunFormat)

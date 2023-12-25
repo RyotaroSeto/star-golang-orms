@@ -8,7 +8,7 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 | 2 | [beego/beego](https://github.com/beego/beego) | 30490 | 1199 | 5692 | 13 | beego is an open-source, high-performance web framework for the Go programming language. | 2012-02-29 02:32:08 | 2023-12-25 12:34:19 |
 | 3 | [jmoiron/sqlx](https://github.com/jmoiron/sqlx) | 14764 | 198 | 1057 | 346 | general purpose extensions to golang's database/sql | 2013-01-28 19:40:00 | 2023-12-25 12:17:55 |
 | 4 | [ent/ent](https://github.com/ent/ent) | 14416 | 152 | 907 | 394 | An entity framework for Go | 2019-06-12 22:53:55 | 2023-12-25 12:19:29 |
-| 5 | [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc) | 9651 | 69 | 655 | 217 | Generate type-safe code from SQL | 2019-06-21 21:11:35 | 2023-12-25 09:47:32 |
+| 5 | [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc) | 9652 | 69 | 655 | 217 | Generate type-safe code from SQL | 2019-06-21 21:11:35 | 2023-12-25 13:56:16 |
 | 6 | [go-xorm/xorm](https://github.com/go-xorm/xorm) | 6652 | 266 | 770 | 307 | Simple and Powerful ORM for Go, support mysql,postgres,tidb,sqlite3,mssql,oracle, Moved to https://gitea.com/xorm/xorm | 2013-05-09 02:35:04 | 2023-12-23 18:21:53 |
 | 7 | [volatiletech/sqlboiler](https://github.com/volatiletech/sqlboiler) | 6187 | 75 | 563 | 99 | Generate a Go ORM tailored to your database schema. | 2016-02-21 06:18:25 | 2023-12-25 12:24:56 |
 | 8 | [go-pg/pg](https://github.com/go-pg/pg) | 5510 | 88 | 405 | 115 | Golang ORM with focus on PostgreSQL features and performance | 2013-04-24 12:31:41 | 2023-12-23 04:01:49 |
@@ -41,7 +41,7 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 ## [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc)
 | 2020-12-25 | 2021-06-25 | 2021-12-25 | 2022-06-25 | 2022-12-25 | 2023-06-25 | 2023-12-25 |
 | --- | --- | --- | --- | --- | --- | --- |
-| - | - | 944 | 2513 | 4415 | 6911 | 9651 |
+| - | - | 944 | 2513 | 4415 | 6911 | 9652 |
 ## [go-xorm/xorm](https://github.com/go-xorm/xorm)
 | 2020-12-25 | 2021-06-25 | 2021-12-25 | 2022-06-25 | 2022-12-25 | 2023-06-25 | 2023-12-25 |
 | --- | --- | --- | --- | --- | --- | --- |

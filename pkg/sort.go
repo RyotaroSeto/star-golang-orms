@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"sort"
+	"star-golang-orms/domain/model"
 )
 
 func (gh GitHub) SortDesByStarCount() error {
@@ -16,7 +17,7 @@ func (gh GitHub) SortDesByStarCount() error {
 	return nil
 }
 
-func githubRepositorySort(grs []GithubRepository) error {
+func githubRepositorySort(grs model.Repositories) error {
 	sort.Slice(grs, func(i, j int) bool {
 		return grs[i].StargazersCount > grs[j].StargazersCount
 	})

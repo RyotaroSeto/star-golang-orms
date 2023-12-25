@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"star-golang-orms/domain/model"
 	"strings"
 	"sync"
 	"time"
@@ -42,7 +43,7 @@ type ReadmeDetailsRepository struct {
 	StarCounts map[string]int
 }
 
-func NewDetailsRepository(repo GithubRepository, stargazers []Stargazer) ReadmeDetailsRepository {
+func NewDetailsRepository(repo *model.Repository, stargazers []Stargazer) ReadmeDetailsRepository {
 	r := &ReadmeDetailsRepository{
 		RepoName: repo.FullName,
 		RepoURL:  repo.URL,
@@ -111,12 +112,12 @@ func NowGithubRepoCount(ctx context.Context, name, token string) (GithubReposito
 	return repo, nil
 }
 
-func GetStargazersCountByRepo(ctx context.Context, token string, repo GithubRepository) []Stargazer {
+func GetStargazersCountByRepo(ctx context.Context, token string, repo *model.Repository) []Stargazer {
 	sem := make(chan bool, 4)
 	var eg errgroup.Group
 	var lock sync.Mutex
 	var stargazers []Stargazer
-	for page := 1; page <= lastPage(repo); page++ {
+	for page := 1; page <= LastPage(repo); page++ {
 		sem <- true
 		page := page
 		eg.Go(func() error {
@@ -141,15 +142,15 @@ func GetStargazersCountByRepo(ctx context.Context, token string, repo GithubRepo
 	return stargazers
 }
 
-func lastPage(repo GithubRepository) int {
+func LastPage(repo *model.Repository) int {
 	return totalPages(repo) + 1
 }
 
-func totalPages(repo GithubRepository) int {
+func totalPages(repo *model.Repository) int {
 	return repo.StargazersCount / 100
 }
 
-func getStargazersPage(ctx context.Context, repo GithubRepository, page int, token string) ([]Stargazer, error) {
+func getStargazersPage(ctx context.Context, repo *model.Repository, page int, token string) ([]Stargazer, error) {
 	var stars []Stargazer
 
 	url := baseURL + fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)
