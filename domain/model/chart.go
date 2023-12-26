@@ -12,6 +12,11 @@ import (
 	"github.com/go-echarts/go-echarts/v2/types"
 )
 
+const (
+	htmlFilePath = "output/orm_chart.html"
+	jpegFilePath = "output/orm_chart.jpeg"
+)
+
 func (rds RepositoryDetails) MakeHTMLChartFile() error {
 	line := setUpChart()
 	for _, d := range rds {

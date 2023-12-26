@@ -31,11 +31,6 @@ If there are any other public repositories of golang orMapper, I'd be glad to he
 	deployURL                  = "https://ryotaroseto.github.io/star-golang-orms/output/orm_chart.html"
 )
 
-const (
-	htmlFilePath = "output/orm_chart.html"
-	jpegFilePath = "output/orm_chart.jpeg"
-)
-
 type GitHub struct {
 	Repositories
 	RepositoryDetails
