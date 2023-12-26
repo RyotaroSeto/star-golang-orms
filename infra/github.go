@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"star-golang-orms/domain/model"
 	"star-golang-orms/domain/repository"
+	"star-golang-orms/pkg"
 )
 
 const baseURL = "https://api.github.com/"
@@ -77,8 +78,32 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 
 func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*[]model.Stargazer, error) {
 	var stars []model.Stargazer
-	if err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page), &stars); err != nil {
+	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
+	if err != nil {
 		return nil, err
+	}
+
+	resp, err := r.get(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, pkg.ErrOtherReason
+	}
+
+	if err := json.Unmarshal(b, &stars); err != nil {
+		return nil, err
+	}
+
+	if len(stars) == 0 {
+		return nil, pkg.ErrNoStars
 	}
 
 	return &stars, nil
