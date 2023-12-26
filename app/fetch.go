@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"log"
 	"star-golang-orms/configs"
 	"star-golang-orms/domain/model"
@@ -102,9 +103,9 @@ func GetStargazersCountByRepo(ctx context.Context, token string, repo *model.Rep
 		eg.Go(func() error {
 			defer func() { <-sem }()
 			result, err := pkg.GetStargazersPage(ctx, repo, page, token)
-			// if errors.Is(err, ErrNoMorePages) {
-			// 	return nil
-			// }
+			if errors.Is(err, pkg.ErrNoMorePages) {
+				return nil
+			}
 			if err != nil {
 				return err
 			}
@@ -120,3 +121,6 @@ func GetStargazersCountByRepo(ctx context.Context, token string, repo *model.Rep
 
 	return stargazers
 }
+
+// GetStargazersPageを使用しているため修正
+// READMEの結果がソートされていない
