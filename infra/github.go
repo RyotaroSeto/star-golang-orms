@@ -24,15 +24,6 @@ func NewGitHubRepository(ctx context.Context) repository.GitHub {
 	}
 }
 
-func (r *GitHubRepository) get(ctx context.Context, req *http.Request) (*http.Response, error) {
-	res, err := r.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
 func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -43,33 +34,33 @@ func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*htt
 	return req, nil
 }
 
-func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string, result interface{}) error {
+func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string, result interface{}) (*http.Response, error) {
 	req, err := r.newHttpRequest(ctx, url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	resp, err := r.get(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return errors.New(string(b))
-	}
-
-	return json.Unmarshal(b, result)
+	return r.client.Do(req)
 }
 
 func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.Repository, error) {
 	var repo model.Repository
-	if err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", rn), &repo); err != nil {
+	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", rn), &repo)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return nil, errors.New(string(b))
+	}
+
+	if err := json.Unmarshal(b, &repo); err != nil {
 		return nil, err
 	}
 
@@ -78,12 +69,7 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 
 func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*[]model.Stargazer, error) {
 	var stars []model.Stargazer
-	req, err := r.newHttpRequest(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := r.get(ctx, req)
+	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)), &repo)
 	if err != nil {
 		return nil, err
 	}
