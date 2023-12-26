@@ -83,25 +83,21 @@ func (s *fetchService) createGitHub(ctx context.Context) (*model.GitHub, error) 
 }
 
 func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model.Repository) []model.Stargazer {
-	sem := make(chan bool, 4)
-	var eg errgroup.Group
-	var lock sync.Mutex
-	var stargazers []model.Stargazer
+	var (
+		sem        = make(chan bool, 4)
+		eg         errgroup.Group
+		lock       sync.Mutex
+		stargazers = model.NewStargazers()
+	)
 	for page := 1; page <= model.LastPage(repo); page++ {
 		sem <- true
 		page := page
 		eg.Go(func() error {
 			defer func() { <-sem }()
-			result, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
-			if errors.Is(err, pkg.ErrNoMorePages) {
-				return nil
-			}
-			if err != nil {
-				return err
-			}
+			result := s.fetchStargazersPage(ctx, repo, page, stargazers)
 			lock.Lock()
 			defer lock.Unlock()
-			stargazers = append(stargazers, *result...)
+			stargazers.Stars = append(stargazers.Stars, *result...)
 			return nil
 		})
 	}
@@ -109,7 +105,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 		log.Println(err)
 	}
 
-	return stargazers
+	return stargazers.Stars
 }
 
 func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) *[]model.Stargazer {
