@@ -174,6 +174,20 @@ func TestGitHubRepository_GetStarPage(t *testing.T) {
 			assertion:  assert.Error,
 		},
 		{
+			name: "failed. stars is empty",
+			args: args{
+				repo: &model.Repository{
+					FullName: "test/test",
+				},
+				page: 1,
+			},
+			expReqJSON: ``,
+			respCode:   http.StatusOK,
+			respBody:   `[]`,
+			want:       nil,
+			assertion:  assert.Error,
+		},
+		{
 			name: "failed to unmarshal",
 			args: args{
 				repo: &model.Repository{

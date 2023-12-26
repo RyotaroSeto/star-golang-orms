@@ -69,7 +69,7 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 
 func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*[]model.Stargazer, error) {
 	var stars []model.Stargazer
-	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page)), &repo)
+	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page), &repo)
 	if err != nil {
 		return nil, err
 	}
