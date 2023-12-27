@@ -189,12 +189,12 @@ func (gh *GitHub) ReadmeRepoAndDetailSort() {
 	gh.ReadmeDetailsRepositorySort()
 }
 
-func (gh *GitHub) GithubRepositorySort() Repositories {
+func (gh *GitHub) GithubRepositorySort() {
 	tmpRepositories := make(Repositories, len(gh.Repositories))
 	copy(tmpRepositories, gh.Repositories)
 	sort.Sort(tmpRepositories)
 
-	return tmpRepositories
+	gh.Repositories = tmpRepositories
 }
 
 func (rs Repositories) Len() int {
@@ -209,12 +209,12 @@ func (rs Repositories) Less(i, j int) bool {
 	return rs[i].StargazersCount > rs[j].StargazersCount
 }
 
-func (gh *GitHub) ReadmeDetailsRepositorySort() RepositoryDetails {
+func (gh *GitHub) ReadmeDetailsRepositorySort() {
 	tmpRepositoryDetails := make(RepositoryDetails, len(gh.RepositoryDetails))
 	copy(tmpRepositoryDetails, gh.RepositoryDetails)
 	sort.Sort(tmpRepositoryDetails)
 
-	return tmpRepositoryDetails
+	gh.RepositoryDetails = tmpRepositoryDetails
 }
 
 func (rds RepositoryDetails) Len() int {

@@ -63,8 +63,6 @@ func (s *fetchService) createGitHub(ctx context.Context) (*model.GitHub, error) 
 }
 
 func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHub) error {
-	wg := new(sync.WaitGroup)
-	var lock sync.Mutex
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -72,12 +70,12 @@ func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHu
 		return err
 	default:
 		for _, repoNm := range model.TargetRepository {
-			wg.Add(1)
+			s.wg.Add(1)
 			go func(repoNm string) {
-				defer wg.Done()
+				defer s.wg.Done()
 				repo, err := s.gitHubRepo.GetRepository(ctx, model.RepositoryName(repoNm))
 				if err != nil {
-					log.Println(err)
+					s.errCh <- err
 					return
 				}
 				s.repos = append(s.repos, *repo)
@@ -86,13 +84,13 @@ func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHu
 				log.Println(repoNm + " DONE")
 
 				rd := model.NewRepositoryDetails(repo, stargazers)
-				lock.Lock()
-				defer lock.Unlock()
+				s.mu.Lock()
+				defer s.mu.Unlock()
 				s.detailRepos = append(s.detailRepos, rd)
 			}(repoNm)
 		}
 	}
-	wg.Wait()
+	s.wg.Wait()
 
 	return nil
 
@@ -111,6 +109,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 		eg.Go(func() error {
 			defer func() { <-sem }()
 			result := s.fetchStargazersPage(ctx, repo, page, stargazers)
+
 			lock.Lock()
 			defer lock.Unlock()
 			stargazers.Stars = append(stargazers.Stars, *result...)
@@ -118,7 +117,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 		})
 	}
 	if err := eg.Wait(); err != nil {
-		log.Println(err)
+		s.errCh <- err
 	}
 
 	return stargazers.Stars
@@ -135,5 +134,3 @@ func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repo
 	}
 	return pagers
 }
-
-// READMEの結果がソートされていない
