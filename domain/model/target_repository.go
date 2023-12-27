@@ -1,4 +1,4 @@
-package pkg
+package model
 
 var TargetRepository = []string{
 	"go-gorm/gorm",
@@ -19,6 +19,7 @@ var TargetRepository = []string{
 	"gobuffalo/pop",
 	"go-jet/jet",
 	"huandu/go-sqlbuilder",
+
 	// "jirfag/go-queryset",
 	// "go-rel/rel",
 	// "coocood/qbs",

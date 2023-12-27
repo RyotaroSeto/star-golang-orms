@@ -3,55 +3,32 @@ package cmd
 import (
 	"context"
 	"log"
-	"os"
 	"os/signal"
-	"star-golang-orms/configs"
-	"star-golang-orms/pkg"
+	"star-golang-orms/app"
+	"star-golang-orms/domain/service"
+	"star-golang-orms/infra"
 	"syscall"
 )
 
 func Execute() {
-	ctx, cancel := NewCtx()
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	config, err := configs.LoadConfig(".")
+	err := infra.Load(ctx)
 	if err != nil {
 		log.Fatal("cannot load config", err)
-		return
 	}
 
-	gh, err := pkg.ExecGitHubAPI(ctx, config.GithubToken)
-	if err != nil {
-		log.Fatal("cannot exec github api", err)
-		return
-	}
+	svc := setupJob(ctx)
 
-	err = gh.SortDesByStarCount()
+	err = svc.Start(ctx)
 	if err != nil {
-		log.Fatal("cannot sort star count", err)
-		return
-	}
-
-	err = gh.MakeChart()
-	if err != nil {
-		log.Fatal("cannot make chart", err)
-		return
-	}
-
-	err = gh.Edit()
-	if err != nil {
-		log.Fatal("cannot edit readme", err)
-		return
+		log.Fatal("cannot start job", err)
 	}
 }
 
-func NewCtx() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		trap := make(chan os.Signal, 1)
-		signal.Notify(trap, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
-		<-trap
-	}()
-
-	return ctx, cancel
+func setupJob(ctx context.Context) service.Fetcher {
+	return app.NewFetchService(
+		infra.NewGitHubRepository(ctx),
+	)
 }
