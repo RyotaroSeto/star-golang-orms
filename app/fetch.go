@@ -52,34 +52,50 @@ func (s *fetchService) Start(ctx context.Context) error {
 }
 
 func (s *fetchService) createGitHub(ctx context.Context) (*model.GitHub, error) {
-	wg := new(sync.WaitGroup)
-	var lock sync.Mutex
-	for _, repoNm := range model.TargetRepository {
-		wg.Add(1)
-		go func(repoNm string) {
-			defer wg.Done()
-			repo, err := s.gitHubRepo.GetRepository(ctx, model.RepositoryName(repoNm))
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			s.repos = append(s.repos, *repo)
-			log.Println(repoNm + " Start")
-			stargazers := s.getStargazersCountByRepo(ctx, repo)
-			log.Println(repoNm + " DONE")
-
-			rd := model.NewRepositoryDetails(repo, stargazers)
-			lock.Lock()
-			defer lock.Unlock()
-			s.detailRepos = append(s.detailRepos, rd)
-		}(repoNm)
+	if err := s.getGitHubRepos(ctx, s.gitHubRepo); err != nil {
+		return nil, err
 	}
 
-	wg.Wait()
 	return &model.GitHub{
 		Repositories:      s.repos,
 		RepositoryDetails: s.detailRepos,
 	}, nil
+}
+
+func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHub) error {
+	wg := new(sync.WaitGroup)
+	var lock sync.Mutex
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-s.errCh:
+		return err
+	default:
+		for _, repoNm := range model.TargetRepository {
+			wg.Add(1)
+			go func(repoNm string) {
+				defer wg.Done()
+				repo, err := s.gitHubRepo.GetRepository(ctx, model.RepositoryName(repoNm))
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				s.repos = append(s.repos, *repo)
+				log.Println(repoNm + " Start")
+				stargazers := s.getStargazersCountByRepo(ctx, repo)
+				log.Println(repoNm + " DONE")
+
+				rd := model.NewRepositoryDetails(repo, stargazers)
+				lock.Lock()
+				defer lock.Unlock()
+				s.detailRepos = append(s.detailRepos, rd)
+			}(repoNm)
+		}
+	}
+	wg.Wait()
+
+	return nil
+
 }
 
 func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model.Repository) []model.Stargazer {
