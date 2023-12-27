@@ -100,7 +100,6 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 	var (
 		sem        = make(chan bool, 4)
 		eg         errgroup.Group
-		lock       sync.Mutex
 		stargazers = model.NewStargazers()
 	)
 	for page := 1; page <= repo.LastPage(); page++ {
@@ -109,10 +108,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 		eg.Go(func() error {
 			defer func() { <-sem }()
 			result := s.fetchStargazersPage(ctx, repo, page, stargazers)
-
-			lock.Lock()
-			defer lock.Unlock()
-			stargazers.Stars = append(stargazers.Stars, result.Stars...)
+			stargazers.Add(result.Stars)
 			return nil
 		})
 	}
