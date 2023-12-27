@@ -57,7 +57,7 @@ func (r RepositoryName) String() string {
 
 type Repositories []Repository
 
-func (rs *Repositories) GithubRepositorySort() {
+func (rs *Repositories) githubRepositorySort() {
 	tmpRepositories := make(Repositories, len(*rs))
 	copy(tmpRepositories, *rs)
 	sort.Sort(tmpRepositories)

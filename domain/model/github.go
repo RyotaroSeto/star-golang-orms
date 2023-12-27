@@ -11,8 +11,8 @@ type GitHub struct {
 }
 
 func (gh *GitHub) RepoAndDetailAscSort() {
-	gh.GithubRepositorySort()
-	gh.ReadmeDetailsRepositorySort()
+	gh.githubRepositorySort()
+	gh.readmeDetailsRepositorySort()
 }
 
 func (gh GitHub) EditREADME() (err error) {

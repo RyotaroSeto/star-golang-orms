@@ -80,7 +80,7 @@ func (d RepositoryDetail) generateStarHistorys() []opts.LineData {
 
 type RepositoryDetails []RepositoryDetail
 
-func (rds *RepositoryDetails) ReadmeDetailsRepositorySort() {
+func (rds *RepositoryDetails) readmeDetailsRepositorySort() {
 	tmpRepositoryDetails := make(RepositoryDetails, len(*rds))
 	copy(tmpRepositoryDetails, *rds)
 	sort.Sort(tmpRepositoryDetails)
