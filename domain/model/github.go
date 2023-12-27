@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	yyyymmddFormat             = time.DateOnly
+	yyyymmddHHmmssHaihunFormat = time.DateTime
+)
+
 type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
 }

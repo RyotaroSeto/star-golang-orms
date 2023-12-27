@@ -17,18 +17,16 @@ const (
 The number of stars is expressed in an easy-to-understand manner for golang ormapper information with more than 1,000 stars. It can also display the number of stars at different times of the year.
 If there are any other public repositories of golang orMapper, I'd be glad to hear about them!
 `
-
 	repoTable = `| No. | Project Name | Stars | Subscribers | Forks | Open Issues | Description | Createdate | Last Update |
 | --- | ------------ | ----- | ----------- | ----- | ----------- | ----------- | ----------- | ----------- |
 `
-
 	divider = "|\n| --- | --- | --- | --- | --- | --- | --- |\n"
+	README  = "README.md"
+)
 
-	README                     = "README.md"
-	yyyymmddFormat             = time.DateOnly
-	yyyymmddHHmmssHaihunFormat = time.DateTime
-	starCountZero              = 0
-	deployURL                  = "https://ryotaroseto.github.io/star-golang-orms/output/orm_chart.html"
+const (
+	starCountZero = 0
+	deployURL     = "https://ryotaroseto.github.io/star-golang-orms/output/orm_chart.html"
 )
 
 type GitHub struct {
