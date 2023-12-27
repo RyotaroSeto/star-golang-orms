@@ -35,25 +35,12 @@ type GitHub struct {
 }
 
 type RepositoryDetail struct {
-	RepoName RepositoryName
-	RepoURL  string
-	// StarCounts IntervalStarCounts
+	RepoName   RepositoryName
+	RepoURL    string
 	StarCounts map[string]int
 }
 
 type RepositoryDetails []RepositoryDetail
-
-// type RepositoryDetails struct {
-// 	RepositoryDetails []RepositoryDetail
-// 	lock              sync.Mutex
-// }
-
-// func (rds *RepositoryDetails) Add(repos []RepositoryDetail) {
-// 	rds.lock.Lock()
-// 	defer rds.lock.Unlock()
-
-// 	rds.RepositoryDetails = append(rds.RepositoryDetails, repos...)
-// }
 
 type Repositories []Repository
 
@@ -74,9 +61,6 @@ func NewRepositoryDetails(repo *Repository, stargazers []Stargazer) RepositoryDe
 	r := &RepositoryDetail{
 		RepoName: repo.RepositoryName(),
 		RepoURL:  repo.URL,
-		// StarCounts: IntervalStarCounts{},
-		// StarCounts: make(IntervalStarCounts, 7, len(stargazers)),
-
 		StarCounts: map[string]int{
 			"StarCount72MouthAgo": 0,
 			"StarCount60MouthAgo": 0,
@@ -84,13 +68,6 @@ func NewRepositoryDetails(repo *Repository, stargazers []Stargazer) RepositoryDe
 			"StarCount36MouthAgo": 0,
 			"StarCount24MouthAgo": 0,
 			"StarCountNow":        0,
-			// "StarCountNow":        0,
-			// "StarCount12MouthAgo": 0,
-			// "StarCount24MouthAgo": 0,
-			// "StarCount36MouthAgo": 0,
-			// "StarCount48MouthAgo": 0,
-			// "StarCount60MouthAgo": 0,
-			// "StarCount72MouthAgo": 0,
 		},
 	}
 	r.calculateStarCount(stargazers)
@@ -166,11 +143,6 @@ func (d RepositoryDetail) makeLine(line *charts.Line, dates []string) *charts.Li
 
 func (d RepositoryDetail) generateStarHistorys() []opts.LineData {
 	starHistorys := make([]opts.LineData, 0, 7)
-
-	// for _, v := range d.StarCounts {
-	// 	starHistorys = append(starHistorys, opts.LineData{Value: v})
-	// }
-
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount72MouthAgo"]})
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount60MouthAgo"]})
 	starHistorys = append(starHistorys, opts.LineData{Value: d.StarCounts["StarCount48MouthAgo"]})

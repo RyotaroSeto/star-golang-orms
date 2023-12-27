@@ -73,15 +73,3 @@ type RepositoryName string
 func (r RepositoryName) String() string {
 	return string(r)
 }
-
-type IntervalStarCount struct {
-	StarCount72MouthAgo int
-	StarCount60MouthAgo int
-	StarCount48MouthAgo int
-	StarCount36MouthAgo int
-	StarCount24MouthAgo int
-	StarCount12MouthAgo int
-	StarCountNow        int
-}
-
-type IntervalStarCounts []IntervalStarCount
