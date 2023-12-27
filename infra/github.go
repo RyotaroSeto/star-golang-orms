@@ -3,13 +3,12 @@ package infra
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"star-golang-orms/domain/model"
 	"star-golang-orms/domain/repository"
-	"star-golang-orms/pkg"
+	"star-golang-orms/pkg/errors"
 )
 
 const baseURL = "https://api.github.com/"
@@ -47,17 +46,17 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 	var repo model.Repository
 	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", rn), &repo)
 	if err != nil {
-		return nil, err
+		return nil, errors.Newf(errors.InternalServerError, "failed to get repository: %s", err)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Newf(errors.InternalServerError, "failed to read response body: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, errors.New(string(b))
+		return nil, errors.New(errors.InternalServerError, string(b))
 	}
 
 	if err := json.Unmarshal(b, &repo); err != nil {
@@ -71,25 +70,25 @@ func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Reposito
 	var stars []model.Stargazer
 	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page), &repo)
 	if err != nil {
-		return nil, err
+		return nil, errors.Newf(errors.InternalServerError, "failed to get repository: %s", err)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Newf(errors.InternalServerError, "failed to read response body: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, pkg.ErrOtherReason
+		return nil, errors.ErrOtherReason
 	}
 
 	if err := json.Unmarshal(b, &stars); err != nil {
-		return nil, err
+		return nil, errors.Newf(errors.InternalServerError, "failed to unmarshal response body: %s", err)
 	}
 
 	if len(stars) == 0 {
-		return nil, pkg.ErrNoStars
+		return nil, errors.ErrNoStars
 	}
 
 	return &stars, nil
