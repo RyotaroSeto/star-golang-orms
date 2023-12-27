@@ -10,25 +10,25 @@ type GitHub struct {
 	RepositoryDetails
 }
 
-func (gh *GitHub) ReadmeRepoAndDetailSort() {
+func (gh *GitHub) RepoAndDetailAscSort() {
 	gh.GithubRepositorySort()
 	gh.ReadmeDetailsRepositorySort()
 }
 
-func (gh GitHub) ReadmeEdit() error {
+func (gh GitHub) EditREADME() (err error) {
 	readme, err := os.Create("./" + README)
 	if err != nil {
-		return err
+		return
 	}
 	defer func() {
 		_ = readme.Close()
 	}()
-	gh.editREADME(readme)
+	gh.editStart(readme)
 
-	return nil
+	return
 }
 
-func (gh GitHub) editREADME(w io.Writer) {
+func (gh GitHub) editStart(w io.Writer) {
 	writeHeader(w)
 	writeChartJPEG(w)
 	writeRepoTbl(w)

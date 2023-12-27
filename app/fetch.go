@@ -39,7 +39,7 @@ func (s *fetchService) Start(ctx context.Context) error {
 		return err
 	}
 
-	gh.ReadmeRepoAndDetailSort()
+	gh.RepoAndDetailAscSort()
 	if err = gh.MakeHTMLChartFile(); err != nil {
 		return starError.Newf(starError.InternalServerError, "failed to create html file: %s", err)
 	}
@@ -48,7 +48,7 @@ func (s *fetchService) Start(ctx context.Context) error {
 		return starError.Newf(starError.InternalServerError, "failed to convert html to image: %s", err)
 	}
 
-	return gh.ReadmeEdit()
+	return gh.EditREADME()
 }
 
 func (s *fetchService) createGitHub(ctx context.Context) (*model.GitHub, error) {
