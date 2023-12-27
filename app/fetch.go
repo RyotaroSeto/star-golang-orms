@@ -112,7 +112,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 
 			lock.Lock()
 			defer lock.Unlock()
-			stargazers.Stars = append(stargazers.Stars, *result...)
+			stargazers.Stars = append(stargazers.Stars, result.Stars...)
 			return nil
 		})
 	}
@@ -123,7 +123,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 	return stargazers.Stars
 }
 
-func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) *[]model.Stargazer {
+func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) *model.Stargazers {
 	pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
 	if errors.Is(err, starError.ErrNoMorePages) {
 		return nil

@@ -66,8 +66,8 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 	return &repo, nil
 }
 
-func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*[]model.Stargazer, error) {
-	var stars []model.Stargazer
+func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*model.Stargazers, error) {
+	var stars model.Stargazers
 	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page), &repo)
 	if err != nil {
 		return nil, errors.Newf(errors.InternalServerError, "failed to get repository: %s", err)
@@ -83,11 +83,11 @@ func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Reposito
 		return nil, errors.ErrOtherReason
 	}
 
-	if err := json.Unmarshal(b, &stars); err != nil {
+	if err := json.Unmarshal(b, &stars.Stars); err != nil {
 		return nil, errors.Newf(errors.InternalServerError, "failed to unmarshal response body: %s", err)
 	}
 
-	if len(stars) == 0 {
+	if len(stars.Stars) == 0 {
 		return nil, errors.ErrNoStars
 	}
 
