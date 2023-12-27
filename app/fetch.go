@@ -7,7 +7,7 @@ import (
 	"star-golang-orms/domain/model"
 	"star-golang-orms/domain/repository"
 	"star-golang-orms/domain/service"
-	"star-golang-orms/pkg"
+	starError "star-golang-orms/pkg/errors"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -41,11 +41,11 @@ func (s *fetchService) Start(ctx context.Context) error {
 
 	gh.ReadmeRepoAndDetailSort()
 	if err = gh.MakeHTMLChartFile(); err != nil {
-		return err
+		return starError.Newf(starError.InternalServerError, "failed to create html file: %s", err)
 	}
 
 	if err = model.ConvertHTMLToImage(); err != nil {
-		return err
+		return starError.Newf(starError.InternalServerError, "failed to convert html to image: %s", err)
 	}
 
 	return gh.ReadmeEdit()
@@ -110,7 +110,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 
 func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) *[]model.Stargazer {
 	pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
-	if errors.Is(err, pkg.ErrNoMorePages) {
+	if errors.Is(err, starError.ErrNoMorePages) {
 		return nil
 	}
 	if err != nil {
