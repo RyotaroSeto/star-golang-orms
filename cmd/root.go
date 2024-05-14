@@ -14,15 +14,12 @@ func Execute() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	err := infra.Load(ctx)
-	if err != nil {
+	if err := infra.Load(ctx); err != nil {
 		log.Fatal("cannot load config", err)
 	}
 
 	svc := setupJob(ctx)
-
-	err = svc.Start(ctx)
-	if err != nil {
+	if err := svc.Start(ctx); err != nil {
 		log.Fatal("cannot start job", err)
 	}
 }
