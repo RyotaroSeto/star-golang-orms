@@ -52,7 +52,7 @@ func (s *fetchService) Start(ctx context.Context) error {
 }
 
 func (s *fetchService) createGitHub(ctx context.Context) (*model.GitHub, error) {
-	if err := s.getGitHubRepos(ctx, s.gitHubRepo); err != nil {
+	if err := s.getGitHubRepos(ctx); err != nil {
 		return nil, err
 	}
 
@@ -62,7 +62,7 @@ func (s *fetchService) createGitHub(ctx context.Context) (*model.GitHub, error) 
 	}, nil
 }
 
-func (s *fetchService) getGitHubRepos(ctx context.Context, repo repository.GitHub) error {
+func (s *fetchService) getGitHubRepos(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -107,7 +107,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 		page := page
 		eg.Go(func() error {
 			defer func() { <-sem }()
-			result := s.fetchStargazersPage(ctx, repo, page, stargazers)
+			result := s.fetchStargazersPage(ctx, repo, page)
 			stargazers.Add(result.Stars)
 			return nil
 		})
@@ -119,7 +119,7 @@ func (s *fetchService) getStargazersCountByRepo(ctx context.Context, repo *model
 	return stargazers.Stars
 }
 
-func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int, stargazers *model.Stargazers) *model.Stargazers {
+func (s *fetchService) fetchStargazersPage(ctx context.Context, repo *model.Repository, page int) *model.Stargazers {
 	pagers, err := s.gitHubRepo.GetStarPage(ctx, repo, page)
 	if errors.Is(err, starError.ErrNoMorePages) {
 		return nil

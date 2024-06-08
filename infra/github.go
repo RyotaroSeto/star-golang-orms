@@ -33,7 +33,7 @@ func (r *GitHubRepository) newHttpRequest(ctx context.Context, url string) (*htt
 	return req, nil
 }
 
-func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string, result interface{}) (*http.Response, error) {
+func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string) (*http.Response, error) {
 	req, err := r.newHttpRequest(ctx, url)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (r *GitHubRepository) getFromGitHub(ctx context.Context, url string, result
 
 func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.RepositoryName) (*model.Repository, error) {
 	var repo model.Repository
-	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", rn), &repo)
+	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s", rn))
 	if err != nil {
 		return nil, errors.Newf(errors.InternalServerError, "failed to get repository: %s", err)
 	}
@@ -68,7 +68,7 @@ func (r *GitHubRepository) GetRepository(ctx context.Context, rn model.Repositor
 
 func (r *GitHubRepository) GetStarPage(ctx context.Context, repo *model.Repository, page int) (*model.Stargazers, error) {
 	var stars model.Stargazers
-	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page), &repo)
+	resp, err := r.getFromGitHub(ctx, baseURL+fmt.Sprintf("repos/%s/stargazers?per_page=100&page=%d&", repo.FullName, page))
 	if err != nil {
 		return nil, errors.Newf(errors.InternalServerError, "failed to get repository: %s", err)
 	}
