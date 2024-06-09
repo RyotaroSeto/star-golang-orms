@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os/signal"
 	"star-golang-orms/app"
 	"star-golang-orms/domain/service"
@@ -10,18 +10,20 @@ import (
 	"syscall"
 )
 
-func Execute() {
+func Execute() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	if err := infra.Load(ctx); err != nil {
-		log.Fatal("cannot load config", err)
+		return fmt.Errorf("cannot load config: %w", err)
 	}
 
 	svc := setupJob(ctx)
 	if err := svc.Start(ctx); err != nil {
-		log.Fatal("cannot start job", err)
+		return fmt.Errorf("cannot start job: %w", err)
 	}
+
+	return nil
 }
 
 func setupJob(ctx context.Context) service.Fetcher {

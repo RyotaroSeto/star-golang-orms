@@ -1,7 +1,12 @@
 package main
 
-import "star-golang-orms/cmd"
+import (
+	"log"
+	"star-golang-orms/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		log.Fatal(err)
+	}
 }
